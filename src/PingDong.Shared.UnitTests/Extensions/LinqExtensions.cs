@@ -4,7 +4,7 @@ using Xunit;
 
 namespace PingDong.Linq
 {
-    public class LinqExtensionTests
+    public class LinqExtensionsTests
     {
         [Fact]
         public void Null_ShouldReturn_True()

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace PingDong.Linq
 {
-    public static class LinqExtension
+    public static class LinqExtensions
     {
         /// <summary>
         /// Is the source null or empty.
