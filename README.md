@@ -1,1 +1,4 @@
-Access build pipeline from [Azure DevOps] (https://pingdong.visualstudio.com/Common%20Library/_build) 
+Master Branch: [![Build Status](https://pingdong.visualstudio.com/Common%20Library/_apis/build/status/library/dotnet/pingdong.shared?branchName=develop)](https://pingdong.visualstudio.com/Common%20Library/_build/latest?definitionId=12&branchName=develop)
+Develop Branch [![Build Status](https://pingdong.visualstudio.com/Common%20Library/_apis/build/status/library/dotnet/pingdong.shared?branchName=master)](https://pingdong.visualstudio.com/Common%20Library/_build/latest?definitionId=12&branchName=master)
+
+Access build pipeline from [Azure DevOps](https://pingdong.visualstudio.com/Common%20Library/_build) 
