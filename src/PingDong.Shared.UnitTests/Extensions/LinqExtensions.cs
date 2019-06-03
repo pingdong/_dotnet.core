@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using PingDong.Linq;
 using Xunit;
 
 namespace PingDong.Linq
