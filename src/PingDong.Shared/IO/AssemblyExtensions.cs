@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using PingDong.Linq;
 
 namespace PingDong.IO
 {
@@ -44,14 +43,16 @@ namespace PingDong.IO
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
 
-            if (!files.Any())
+            var filesToLoad = files.ToList();
+
+            if (!filesToLoad.Any())
                 return new List<Assembly>();
 
             return await Task.Run(() =>
             {
                 var found = new ConcurrentBag<Assembly>();
 
-                foreach (var file in files)
+                foreach (var file in filesToLoad)
                     found.Add(Assembly.LoadFrom(file));
 
                 return found.ToList();
