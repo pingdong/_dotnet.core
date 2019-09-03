@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PingDong.Exception
+namespace PingDong
 {
     public class InvalidParameterException : ArgumentException
     {

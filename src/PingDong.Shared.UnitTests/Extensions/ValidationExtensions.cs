@@ -1,5 +1,4 @@
 ﻿using System;
-using PingDong.Exception;
 using PingDong.Validation;
 using Xunit;
 
