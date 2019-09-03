@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace PingDong.Exception
+namespace PingDong
 {
-    public class DataExistedException : ArgumentNullException
+    public class DataExistedException : ArgumentException
     {
         public DataExistedException() 
             : base("The target data exists.")
