@@ -1,4 +1,5 @@
 ﻿using System;
+using PingDong.Validation;
 
 namespace PingDong.Shared
 {
@@ -11,8 +12,7 @@ namespace PingDong.Shared
         /// <returns></returns>
         public static string FirstCharToUpper(this string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value));
+            value.EnsureNotNullOrDefault(nameof(value));
 
             return char.ToUpper(value[0]) + value.Substring(1);
         }
@@ -24,8 +24,7 @@ namespace PingDong.Shared
         /// <returns></returns>
         public static string FirstCharToLower(this string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value));
+            value.EnsureNotNullOrDefault(nameof(value));
 
             return char.ToLower(value[0]) + value.Substring(1);
         }

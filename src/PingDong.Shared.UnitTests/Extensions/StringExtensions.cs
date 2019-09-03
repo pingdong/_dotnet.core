@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using PingDong.Linq;
 using Xunit;
 
 namespace PingDong.Shared
