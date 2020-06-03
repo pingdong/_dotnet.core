@@ -3,7 +3,7 @@ trigger:
 
 stages:
   - stage: 'Build'
-    displayName: 'Build the library'
+    displayName: 'Building'
     jobs:
       - job: 'Build'
         displayName: 'Building project'
@@ -91,7 +91,7 @@ stages:
 
   # Publish to Azure DevOps Artifacts feed
   - stage: 'PublishPrereleasePackageToAzureDevops'
-    displayName: 'Publish Prerelease NuGet Package'
+    displayName: 'Publish Prerelease'
     dependsOn: 'Build'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
@@ -113,7 +113,7 @@ stages:
               publishVstsFeed: 'Develop'
 
   - stage: 'PublishReleasePackageToAzureDevops'
-    displayName: 'Publish Release NuGet Package'
+    displayName: 'Publish to DevOps'
     dependsOn: 'Build'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
@@ -136,7 +136,7 @@ stages:
         
   # Publish to Nuget
   - stage: 'PublishReleasePackageToNuGet'
-    displayName: 'Publish Release NuGet Package'
+    displayName: 'Publish to NuGet'
     dependsOn: 'PublishReleasePackageToAzureDevops'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
