@@ -5,7 +5,13 @@ VisualStudioVersion = 16.0.28917.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PingDong.Shared", "src\PingDong.Shared\PingDong.Shared.csproj", "{B78B2353-71A7-4C1C-A94E-5C8ECC60AED0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingDong.Shared.UnitTests", "src\PingDong.Shared.UnitTests\PingDong.Shared.UnitTests.csproj", "{12B1A04B-76CE-478B-A383-33F107B1CE89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PingDong.Shared.UnitTests", "src\PingDong.Shared.UnitTests\PingDong.Shared.UnitTests.csproj", "{12B1A04B-76CE-478B-A383-33F107B1CE89}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1721C774-ADAA-4EDE-9E87-A7D57D850BF8}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
