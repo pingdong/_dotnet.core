@@ -80,7 +80,7 @@ stages:
               nobuild: true
 
   # Publish to Azure DevOps Artifacts feed
-  - stage: 'Publish Prerelease Package'
+  - stage: 'PublishPrereleasePackageToAzureDevops'
     displayName: 'Publish Prerelease NuGet Package'
     dependsOn: 'Build'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -102,7 +102,7 @@ stages:
               nuGetFeedType: 'internal'
               publishVstsFeed: 'Develop'
 
-  - stage: 'Publish Release Package'
+  - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish Release NuGet Package'
     dependsOn: 'Build'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -125,7 +125,7 @@ stages:
               publishVstsFeed: 'Production'
         
   # Publish to Nuget
-  - stage: 'Publish Release Package to NuGet'
+  - stage: 'PublishReleasePackageToNuGet'
     displayName: 'Publish Release NuGet Package'
     dependsOn: 'Build'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
