@@ -70,11 +70,11 @@ stages:
                 reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines
             displayName: 'Create code coverage report'
 
-          - task: PublishCodeCoverageResults@1
+          - task: PublishCodeCoverageResults@2
             displayName: 'Publish code coverage report'
             inputs:
               codeCoverageTool: 'cobertura'
-              summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+              summaryFileLocation: '$(Build.SourcesDirectory)/**/*.xml'
 
           - task: SonarQubeAnalyze@4
             enabled: false
