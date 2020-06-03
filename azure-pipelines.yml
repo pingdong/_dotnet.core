@@ -110,7 +110,7 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: 'Develop'
+              publishVstsFeed: 'Common_Libraries/Develop'
 
   - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish to DevOps'
@@ -132,7 +132,7 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: 'Production'
+              publishVstsFeed: 'Common_Libraries/Production'
         
   # Publish to Nuget
   - stage: 'PublishReleasePackageToNuGet'
