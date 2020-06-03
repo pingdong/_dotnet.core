@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PingDong.Shared\PingDong.Shared.csproj" />
+    <ProjectReference Include="..\PingDong.Core\PingDong.Core.csproj" />
   </ItemGroup>
 
 </Project>

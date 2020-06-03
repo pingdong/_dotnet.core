@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>PingDong.Shared</PackageId>
+    <PackageId>PingDong.Core</PackageId>
     <Description>Providing common functions</Description>
     <Authors>Ping Dong</Authors>
     <Copyright>Copyright (c) 2020 Ping Dong</Copyright>

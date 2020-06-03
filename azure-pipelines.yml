@@ -16,7 +16,7 @@ stages:
         variables:
           buildConfiguration: 'Release'
           dotnetSdkVersion: '3.1.100'
-          sonarQubeProject: 'PingDong.Shared'
+          sonarQubeProject: 'PingDong.Core'
 
         steps:
           - task: UseDotNet@2
