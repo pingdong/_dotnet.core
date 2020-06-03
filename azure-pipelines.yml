@@ -1,6 +1,12 @@
 trigger:
   - '*'
 
+variables:
+  - group: Build.Core
+  - group: Build.Common_Libraries
+  - name: projectName
+    value: 'PingDong.Core'
+  
 stages:
   - stage: 'Build'
     displayName: 'Building'
@@ -8,13 +14,9 @@ stages:
       - job: 'Build'
         displayName: 'Building project'
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: $(vmImage)
         workspace:
           clean: all
-        variables:
-          buildConfiguration: 'Release'
-          dotnetSdkVersion: '3.1.100'
-          sonarQubeProject: 'PingDong.Core'
         steps:
           - task: UseDotNet@2
             displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
@@ -34,8 +36,8 @@ stages:
             inputs:
               SonarQube: 'SonarQube'
               scannerMode: 'MSBuild'
-              projectKey: '$(sonarQubeProject)'
-              projectName: '$(sonarQubeProject)'
+              projectKey: '$(projectName)'
+              projectName: '$(projectName)'
               extraProperties: |
                 sonar.login=$(SonarQubeUserName)
                 sonar.password=$(SonarQubePassword)
@@ -67,16 +69,16 @@ stages:
 
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet Package - Prerelease Version'
-            condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+            condition: ne(variables['Build.SourceBranch'], $(masterBranch))
             inputs:
               command: pack
-              buildProperties: 'VersionSuffix="$(Build.SourceBranchName)-$(Build.BuildNumber)"'
+              buildProperties: $(nugetPrereleaseSuffix)
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
               arguments: '--configuration $(buildConfiguration)'
 
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet Package'
-            condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+            condition: eq(variables['Build.SourceBranch'], $(masterBranch))
             inputs:
               command: pack
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
@@ -90,12 +92,12 @@ stages:
   - stage: 'PublishPrereleasePackageToAzureDevops'
     displayName: 'Publish Prerelease'
     dependsOn: 'Build'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], $(masterBranch)))
     jobs:
       - job:        
         displayName: 'Publish to Private Feed'        
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: $(vmImage)
         steps:
           - checkout: none
 
@@ -108,17 +110,17 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: 'Common_Libraries/Develop'
+              publishVstsFeed: $(prereleaseNugetRepo)
 
   - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish to DevOps'
     dependsOn: 'Build'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], $(masterBranch)))
     jobs:
       - job:      
         displayName: 'Publish to Private Feed'        
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: $(vmImage)
         steps:
           - checkout: none
 
@@ -131,7 +133,7 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: 'Common_Libraries/Production'
+              publishVstsFeed: $(productionNugetRepo)
               allowPackageConflicts: true
         
   # Publish to Nuget
@@ -144,8 +146,6 @@ stages:
         displayName: 'Publish to NuGet'        
         pool:
           vmImage: 'ubuntu-latest'
-        variables:
-          - group: NuGet
         environment: 'NuGet-Repo'
         strategy:
           runOnce:
