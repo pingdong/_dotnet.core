@@ -52,13 +52,6 @@ stages:
               arguments: '--no-restore --configuration $(buildConfiguration)'
 
           - task: DotNetCoreCLI@2
-            displayName: 'Install ReportGenerator'
-            inputs:
-              command: custom
-              custom: tool
-              arguments: 'install --global dotnet-reportgenerator-globaltool'
-
-          - task: DotNetCoreCLI@2
             displayName: 'Run Unit Tests - $(buildConfiguration)'
             inputs:
               command: 'test'
@@ -66,15 +59,11 @@ stages:
               publishTestResults: true
               projects: '**/*[Tt]ests/*.csproj'
 
-          - script: |
-                reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines
-            displayName: 'Create code coverage report'
-
-          - task: PublishCodeCoverageResults@2
+          - task: PublishCodeCoverageResults@1
             displayName: 'Publish code coverage report'
             inputs:
-              codeCoverageTool: 'cobertura'
-              summaryFileLocation: '$(Build.SourcesDirectory)/**/*.xml'
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
 
           - task: SonarQubeAnalyze@4
             enabled: false
