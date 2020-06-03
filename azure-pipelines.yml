@@ -78,6 +78,9 @@ stages:
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
               arguments: '--configuration $(buildConfiguration)'
               nobuild: true
+        
+          - publish: '$(Build.ArtifactStagingDirectory)/packages'
+            artifact: 'packages'
 
   # Publish to Azure DevOps Artifacts feed
   - stage: 'PublishPrereleasePackageToAzureDevops'
@@ -145,3 +148,4 @@ stages:
                     packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
                     nuGetFeedType: 'external'
                     publishFeedCredentials: 'NuGet'
+                    allowPackageConflicts: true
