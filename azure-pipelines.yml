@@ -137,6 +137,7 @@ stages:
               packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
               nuGetFeedType: 'internal'
               publishVstsFeed: 'Common_Libraries/Production'
+              allowPackageConflicts: true
         
   # Publish to Nuget
   - stage: 'PublishReleasePackageToNuGet'
