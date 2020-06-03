@@ -69,7 +69,7 @@ stages:
 
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet Package - Prerelease Version'
-            condition: ne(variables['Build.SourceBranch'], $(masterBranch))
+            condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
             inputs:
               command: pack
               buildProperties: $(nugetPrereleaseSuffix)
@@ -78,7 +78,7 @@ stages:
 
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet Package'
-            condition: eq(variables['Build.SourceBranch'], $(masterBranch))
+            condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
             inputs:
               command: pack
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
@@ -92,7 +92,7 @@ stages:
   - stage: 'PublishPrereleasePackageToAzureDevops'
     displayName: 'Publish Prerelease'
     dependsOn: 'Build'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], $(masterBranch)))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
       - job:        
         displayName: 'Publish to Private Feed'        
@@ -115,7 +115,7 @@ stages:
   - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish to DevOps'
     dependsOn: 'Build'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], $(masterBranch)))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
       - job:      
         displayName: 'Publish to Private Feed'        
