@@ -7,17 +7,14 @@ stages:
     jobs:
       - job: 'Build'
         displayName: 'Building project'
-
         pool:
           vmImage: 'ubuntu-latest'
         workspace:
           clean: all
-
         variables:
           buildConfiguration: 'Release'
           dotnetSdkVersion: '3.1.100'
           sonarQubeProject: 'PingDong.Core'
-
         steps:
           - task: UseDotNet@2
             displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
@@ -96,8 +93,7 @@ stages:
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
       - job:        
-        displayName: 'Publish to Private Feed'
-        
+        displayName: 'Publish to Private Feed'        
         pool:
           vmImage: 'ubuntu-latest'
         steps:
@@ -120,8 +116,7 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
       - job:      
-        displayName: 'Publish to Private Feed'
-        
+        displayName: 'Publish to Private Feed'        
         pool:
           vmImage: 'ubuntu-latest'
         steps:
@@ -146,8 +141,7 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     jobs:
       - deployment:
-        displayName: 'Publish to NuGet'
-        
+        displayName: 'Publish to NuGet'        
         pool:
           vmImage: 'ubuntu-latest'
         environment: 'NuGet-Repo'
