@@ -125,7 +125,7 @@ stages:
               publishVstsFeed: 'Production'
         
   # Publish to Nuget
-  - stage: 'Publish Release Package'
+  - stage: 'Publish Release Package to NuGet'
     displayName: 'Publish Release NuGet Package'
     dependsOn: 'Build'
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
