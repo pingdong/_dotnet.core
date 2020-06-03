@@ -154,5 +154,5 @@ stages:
                 - task: NuGetToolInstaller@1
                   displayName: 'Install NuGet'
                   
-                - script: nuget push $(Pipeline.Workspace)\packages\releases\*.nupkg -ApiKey $(nuget.apiKey) -SkipDuplicate -NoSymbols
+                - script: nuget push $(Pipeline.Workspace)/packages/releases/*.nupkg -ApiKey $(nuget.apiKey) -SkipDuplicate -NoSymbols
                   displayName: 'Push to NuGet.org'
