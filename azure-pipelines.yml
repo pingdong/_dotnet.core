@@ -157,5 +157,5 @@ stages:
                 - task: NuGetAuthenticate@0
                   displayName: 'Authenticate NuGet'
                   
-                - script: nuget push $(Pipeline.Workspace)/packages/releases/*.nupkg -Source nuget.source -SkipDuplicate -NoSymbols
+                - script: NuGet push $(Pipeline.Workspace)/packages/releases/*.nupkg -Source nuget.source -SkipDuplicate -NoSymbols
                   displayName: 'Push to NuGet.org'
