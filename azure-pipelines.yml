@@ -92,7 +92,12 @@ stages:
   - stage: 'PublishPrereleasePackageToAzureDevops'
     displayName: 'Publish Prerelease'
     dependsOn: 'Build'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: |
+      and
+      (
+        succeeded(),
+        ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      )
     jobs:
       - job:        
         displayName: 'Publish to Private Feed'        
@@ -115,7 +120,12 @@ stages:
   - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish to DevOps'
     dependsOn: 'Build'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: | 
+      and
+      (
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      )
     jobs:
       - job:      
         displayName: 'Publish to Private Feed'        
@@ -140,12 +150,17 @@ stages:
   - stage: 'PublishReleasePackageToNuGet'
     displayName: 'Publish to NuGet'
     dependsOn: 'PublishReleasePackageToAzureDevops'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: |
+      and
+      (
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      )
     jobs:
       - deployment:
         displayName: 'Publish to NuGet'        
         pool:
-          vmImage: 'ubuntu-latest'
+          vmImage: $(vmImage)
         environment: 'NuGet-Repo'
         strategy:
           runOnce:
