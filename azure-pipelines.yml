@@ -14,15 +14,15 @@ stages:
       - job: 'Build'
         displayName: 'Building project'
         pool:
-          vmImage: $(vmImage)
+          vmImage: $(build.pool)
         workspace:
           clean: all
         steps:
           - task: UseDotNet@2
-            displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
+            displayName: 'Use .NET Core SDK $(dotnet.sdk.version)'
             inputs:
               packageType: sdk
-              version: '$(dotnetSdkVersion)'
+              version: '$(dotnet.sdk.version)'
               installationPath: $(Agent.ToolsDirectory)/dotnet
 
           - task: DotNetCoreCLI@2
@@ -44,17 +44,17 @@ stages:
                 sonar.cs.opencover.reportsPaths="$(Build.SourcesDirectory)/TestResults/Coverage.opencover.xml"
 
           - task: DotNetCoreCLI@2
-            displayName: 'Build Solution - $(buildConfiguration)'
+            displayName: 'Build Solution - $(build.configuration.release)'
             inputs:
               command: build
               projects: '**/*.csproj'
-              arguments: '--no-restore --configuration $(buildConfiguration)'
+              arguments: '--no-restore --configuration $(build.configuration.release)'
 
           - task: DotNetCoreCLI@2
-            displayName: 'Run Unit Tests - $(buildConfiguration)'
+            displayName: 'Run Unit Tests - $(build.configuration.release)'
             inputs:
               command: 'test'
-              arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
+              arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
               publishTestResults: true
               projects: '**/*[Tt]ests/*.csproj'
 
@@ -72,9 +72,9 @@ stages:
             condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
             inputs:
               command: pack
-              buildProperties: $(nugetPrereleaseSuffix)
+              buildProperties: $(nuget.prerelease.suffix)
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
-              arguments: '--configuration $(buildConfiguration)'
+              arguments: '--configuration $(build.configuration.release)'
 
           - task: DotNetCoreCLI@2
             displayName: 'Create NuGet Package'
@@ -82,7 +82,7 @@ stages:
             inputs:
               command: pack
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
-              arguments: '--configuration $(buildConfiguration)'
+              arguments: '--configuration $(build.configuration.release)'
               nobuild: true
         
           - publish: '$(Build.ArtifactStagingDirectory)/packages'
@@ -102,7 +102,7 @@ stages:
       - job:        
         displayName: 'Publish to Private Feed'        
         pool:
-          vmImage: $(vmImage)
+          vmImage: $(build.pool)
         steps:
           - checkout: none
 
@@ -115,7 +115,7 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: $(prereleaseNugetRepo)
+              publishVstsFeed: $(artifact.feed.prerelease)
 
   - stage: 'PublishReleasePackageToAzureDevops'
     displayName: 'Publish to DevOps'
@@ -130,7 +130,7 @@ stages:
       - job:      
         displayName: 'Publish to Private Feed'        
         pool:
-          vmImage: $(vmImage)
+          vmImage: $(build.pool)
         steps:
           - checkout: none
 
@@ -143,7 +143,7 @@ stages:
               command: 'push'
               packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
               nuGetFeedType: 'internal'
-              publishVstsFeed: $(productionNugetRepo)
+              publishVstsFeed: $(artifact.feed.production)
               allowPackageConflicts: true
         
   # Publish to Nuget
@@ -160,7 +160,7 @@ stages:
       - deployment:
         displayName: 'Publish to NuGet'        
         pool:
-          vmImage: $(vmImage)
+          vmImage: $(build.pool)
         environment: 'NuGet-Repo'
         strategy:
           runOnce:
