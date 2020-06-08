@@ -4,7 +4,7 @@ trigger:
 variables:
 - group : Build.Core
 - group : Build.NuGet
--  name : projectName
+- name  : projectName
   value : 'PingDong.Core'
   
 stages:
@@ -72,11 +72,11 @@ stages:
       clean: all
     variables:
       - group : Build.Unit_Test
-      -  name : disable.coverage.autogenerate
+      - name  : disable.coverage.autogenerate
         value : 'true'
-      -  name : codecoveragehistory.directory
+      - name  : codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)\history'
-      -  name : codecoveragehistory.feedName
+      - name  : codecoveragehistory.feedName
         value : '$(Build.Repository.Name)-$(Build.SourceBranchName)'
     steps:     
     - task: UniversalPackages@0
