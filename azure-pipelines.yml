@@ -72,8 +72,8 @@ stages:
       clean: all
     variables:
       - group : Build.Unit_Test
-      - name  : disable.coverage.autogenerate
-        value : 'true'
+      #- name  : disable.coverage.autogenerate
+      #  value : 'true'
       - name  : codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)/history'
       - name  : codecoveragehistory.package
@@ -104,7 +104,8 @@ stages:
         reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
         targetdir: $(Build.SourcesDirectory)/TestResults/Coverage/
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
-        #historydir: $(codecoveragehistory.directory)
+        historydir: $(codecoveragehistory.directory)
+        # TODO: Coverage History
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
@@ -122,7 +123,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
+        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/cobertura.xml
   
 - stage: Package
   displayName: Packaging
@@ -179,7 +180,7 @@ stages:
       steps:
         - checkout: none
 
-        - download: $(Build.ArtifactStagingDirectory)/packages
+        - download: current
           artifact: 'packages'
 
         - task: NuGetCommand@2
@@ -189,6 +190,7 @@ stages:
             packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.prerelease)
+            # VERIFY: Pre-release publish
 
 # Release
 - stage: Publish_To_AzureDevops
@@ -210,7 +212,7 @@ stages:
       steps:
         - checkout: none
 
-        - download: $(Build.ArtifactStagingDirectory)/packages
+        - download: current
           artifact: packages
 
         - task: NuGetCommand@2
@@ -221,6 +223,7 @@ stages:
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.production)
             allowPackageConflicts: true
+            # FIX: Unable to find package
       
 - stage: Publish_To_NuGet
   displayName: Publish to NuGet
@@ -245,7 +248,7 @@ stages:
             steps:
               - checkout: none
 
-              - download: $(Build.ArtifactStagingDirectory)/packages
+              - download: current
                 artifact: packages
 
               - task: NuGetCommand@2
@@ -255,3 +258,4 @@ stages:
                   packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
                   nuGetFeedType: external
                   publishFeedCredentials: NuGet
+                  # VERIFY: Publish to Nuget
