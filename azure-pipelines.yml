@@ -18,6 +18,8 @@ stages:
     workspace:
       clean: all
     steps:
+    - checkout: none
+
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK $(build.dotnet.sdk.version)'
       inputs:
@@ -34,6 +36,8 @@ stages:
     displayName: 'Building project'
     pool:
       vmImage: $(build.pool)
+    workspace:
+      clean: all
     variables:
     - group: Build.Static_Test
     steps: 
@@ -54,44 +58,23 @@ stages:
       enabled: false
     # TODO: WhiteSource Bolt
 
-- stage: Build
-  displayName: 'Building'
+- stage: Unit_Test
+  displayName: 'Unit Testing'
   dependsOn: Static_Test
   condition: succeeded()
   jobs:
-  - job: Build
-    displayName: 'Building project'
-    pool:
-      vmImage: $(build.pool)
-    steps: 
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: restore
-        projects: '**/*.csproj'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Build Solution'
-      inputs:
-        command: build
-        projects: '**/*.csproj'
-        arguments: '--no-restore --configuration $(build.configuration.release)'
-
-- stage: Unit_Test
-  displayName: 'Unit Testing'
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
   - job: Unit_Test
-    displayName: 'Building project'
+    displayName: 'Unit Testing'
     pool:
       vmImage: $(build.pool)
+    workspace:
+      clean: all
     steps: 
     - task: DotNetCoreCLI@2
       displayName: 'Run Unit Tests - $(build.configuration.release)'
       inputs:
         command: test
-        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
+        arguments: '-configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
@@ -102,7 +85,7 @@ stages:
         summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/*cobertura.xml'
   
 - stage: Package
-  displayName: 'Unit Testing'
+  displayName: 'Packaging'
   dependsOn: Unit_Test
   condition: succeeded()
   jobs:
@@ -110,6 +93,8 @@ stages:
     displayName: 'Packaging'
     pool:
       vmImage: $(build.pool)
+    workspace:
+      clean: all
     variables:
     - group: Build.NuGet
     steps:
@@ -120,7 +105,7 @@ stages:
         command: pack
         buildProperties: $(nuget.prerelease.suffix)
         packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-        arguments: '--no-build --configuration $(build.configuration.release)'
+        arguments: '--configuration $(build.configuration.release)'
 
     - task: DotNetCoreCLI@2
       displayName: 'Create NuGet Package'
@@ -128,7 +113,7 @@ stages:
       inputs:
         command: pack
         packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-        arguments: '--no-build --configuration $(build.configuration.release)'
+        arguments: '--configuration $(build.configuration.release)'
   
     - publish: '$(Build.ArtifactStagingDirectory)/packages'
       artifact: 'packages'
@@ -148,6 +133,8 @@ stages:
       displayName: 'Publish to Private Feed'        
       pool:
         vmImage: $(build.pool)
+      workspace:
+        clean: all
       steps:
         - checkout: none
 
@@ -177,6 +164,8 @@ stages:
       displayName: 'Publish to Private Feed'        
       pool:
         vmImage: $(build.pool)
+      workspace:
+        clean: all
       steps:
         - checkout: none
 
@@ -206,6 +195,8 @@ stages:
       displayName: 'Publish to NuGet'        
       pool:
         vmImage: $(build.pool)
+      workspace:
+        clean: all
       environment: 'NuGet-Repo'
       strategy:
         runOnce:
