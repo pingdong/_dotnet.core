@@ -1,181 +1,220 @@
 trigger:
-  - '*'
+- '*'
 
 variables:
-  - group: Build.Core
-  - group: Build.Common_Libraries
-  - name: projectName
-    value: 'PingDong.Core'
+- group : Build.Core
+- group : Build.NuGet
+- name  : projectName
+  value : 'PingDong.Core'
   
 stages:
-  - stage: 'Build'
-    displayName: 'Building'
-    jobs:
-      - job: 'Build'
-        displayName: 'Building project'
-        pool:
-          vmImage: $(build.pool)
-        workspace:
-          clean: all
-        steps:
-          - task: UseDotNet@2
-            displayName: 'Use .NET Core SDK $(dotnet.sdk.version)'
-            inputs:
-              packageType: sdk
-              version: '$(dotnet.sdk.version)'
-              installationPath: $(Agent.ToolsDirectory)/dotnet
+- stage: Prepare
+  displayName: 'Preparing'
+  jobs:
+  - job: Preparing
+    displayName: 'Build preparing'
+    pool:
+      vmImage: $(build.pool)
+    workspace:
+      clean: all
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core SDK $(build.dotnet.sdk.version)'
+      inputs:
+        packageType: sdk
+        version: '$(build.dotnet.sdk.version)'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
 
-          - task: DotNetCoreCLI@2
-            displayName: 'Nuget Restore'
-            inputs:
-              command: restore
-              projects: '**/*.csproj'
-               
-          - task: SonarQubePrepare@4
-            enabled: false
-            inputs:
-              SonarQube: 'SonarQube'
-              scannerMode: 'MSBuild'
-              projectKey: '$(projectName)'
-              projectName: '$(projectName)'
-              extraProperties: |
-                sonar.login=$(SonarQubeUserName)
-                sonar.password=$(SonarQubePassword)
-                sonar.cs.opencover.reportsPaths="$(Build.SourcesDirectory)/TestResults/Coverage.opencover.xml"
+    - task: DotNetCoreCLI@2
+      displayName: 'Nuget Restore'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
 
-          - task: DotNetCoreCLI@2
-            displayName: 'Build Solution - $(build.configuration.release)'
-            inputs:
-              command: build
-              projects: '**/*.csproj'
-              arguments: '--no-restore --configuration $(build.configuration.release)'
+- stage: Static_Test
+  displayName: 'Static Testing'
+  dependsOn: Prepare
+  condition: succeeded()
+  jobs:
+  - job: 'Static_Test'
+    displayName: 'Building project'
+    pool:
+      vmImage: $(build.pool)
+    variables:
+    - group: Build.Static_Test
+    steps: 
+    # TODO: SonarQube
+    - task: SonarQubePrepare@4
+      enabled: false
+      inputs:
+        SonarQube: 'SonarQube'
+        scannerMode: 'MSBuild'
+        projectKey: '$(projectName)'
+        projectName: '$(projectName)'
+        extraProperties: |
+          sonar.login=$(sonarqube:username)
+          sonar.password=$(sonarqube:password)
+          sonar.cs.opencover.reportsPaths="$(Build.SourcesDirectory)/TestResults/Coverage.opencover.xml"
+    
+    - task: SonarQubeAnalyze@4
+      enabled: false
+    # TODO: WhiteSource Bolt
 
-          - task: DotNetCoreCLI@2
-            displayName: 'Run Unit Tests - $(build.configuration.release)'
-            inputs:
-              command: 'test'
-              arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
-              publishTestResults: true
-              projects: '**/*[Tt]ests/*.csproj'
+- stage: Build
+  displayName: 'Building'
+  dependsOn: Static_Test
+  condition: succeeded()
+  jobs:
+  - job: Build
+    displayName: 'Building project'
+    pool:
+      vmImage: $(build.pool)
+    steps: 
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Solution - $(build.configuration.release)'
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--no-restore --configuration $(build.configuration.release)'
 
-          - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
-            displayName: ReportGenerator
-            inputs:
-              reports: '$(Build.SourcesDirectory)/TestResults/Coverage/'
-              targetdir: '$(Build.SourcesDirectory)/TestResults/'
+- stage: Unit_Test
+  displayName: 'Unit Testing'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Unit_Test
+    displayName: 'Building project'
+    pool:
+      vmImage: $(build.pool)
+    steps: 
+    - task: DotNetCoreCLI@2
+      displayName: 'Run Unit Tests - $(build.configuration.release)'
+      inputs:
+        command: test
+        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
+        publishTestResults: true
+        projects: '**/*[Tt]ests/*.csproj'
 
-          - task: PublishCodeCoverageResults@1
-            displayName: 'Publish code coverage report'
-            inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/*cobertura.xml'
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage report'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/*cobertura.xml'
+  
+- stage: Package
+  displayName: 'Unit Testing'
+  dependsOn: Unit_Test
+  condition: succeeded()
+  jobs:
+  - job: Package
+    displayName: 'Packaging'
+    pool:
+      vmImage: $(build.pool)
+    variables:
+    - group: Build.NuGet
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package - Prerelease Version'
+      condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      inputs:
+        command: pack
+        buildProperties: $(nuget.prerelease.suffix)
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+        arguments: '--no-build --configuration $(build.configuration.release)'
 
-          - task: SonarQubeAnalyze@4
-            enabled: false
+    - task: DotNetCoreCLI@2
+      displayName: 'Create NuGet Package'
+      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      inputs:
+        command: pack
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+        arguments: '--no-build --configuration $(build.configuration.release)'
+  
+    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+      artifact: 'packages'
 
-          - task: DotNetCoreCLI@2
-            displayName: 'Create NuGet Package - Prerelease Version'
-            condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
-            inputs:
-              command: pack
-              buildProperties: $(nuget.prerelease.suffix)
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages/prereleases'
-              arguments: '--no-build --configuration $(build.configuration.release)'
+# Prerelease
+- stage: Publish_Prerelease
+  displayName: 'Publish Prerelease'
+  dependsOn: Package
+  condition: |
+    and
+    (
+      succeeded(),
+      ne(variables['Build.SourceBranch'], 'refs/heads/master')
+    )
+  jobs:
+    - job:        
+      displayName: 'Publish to Private Feed'        
+      pool:
+        vmImage: $(build.pool)
+      steps:
+        - checkout: none
 
-          - task: DotNetCoreCLI@2
-            displayName: 'Create NuGet Package'
-            condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
-            inputs:
-              command: pack
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages/releases'
-              arguments: '--no-build --configuration $(build.configuration.release)'
-        
-          - publish: '$(Build.ArtifactStagingDirectory)/packages'
-            artifact: 'packages'
+        - download: current
+          artifact: 'packages'
 
-  # Publish to Azure DevOps Artifacts feed
-  - stage: 'PublishPrereleasePackageToAzureDevops'
-    displayName: 'Publish Prerelease'
-    dependsOn: 'Build'
-    condition: |
-      and
-      (
-        succeeded(),
-        ne(variables['Build.SourceBranch'], 'refs/heads/master')
-      )
-    jobs:
-      - job:        
-        displayName: 'Publish to Private Feed'        
-        pool:
-          vmImage: $(build.pool)
-        steps:
-          - checkout: none
+        - task: NuGetCommand@2
+          displayName: 'Push NuGet Package'
+          inputs:
+            command: 'push'
+            packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
+            nuGetFeedType: 'internal'
+            publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
-          - download: current
-            artifact: 'packages'
+# Release
+- stage: Publish_To_AzureDevops
+  displayName: 'Publish to Azure DevOps Feed'
+  dependsOn: Package
+  condition: | 
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    )
+  jobs:
+    - job:      
+      displayName: 'Publish to Private Feed'        
+      pool:
+        vmImage: $(build.pool)
+      steps:
+        - checkout: none
 
-          - task: NuGetCommand@2
-            displayName: 'Push NuGet Package'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
-              nuGetFeedType: 'internal'
-              publishVstsFeed: $(artifact.feed.prerelease)
+        - download: current
+          artifact: 'packages'
 
-  - stage: 'PublishReleasePackageToAzureDevops'
-    displayName: 'Publish to DevOps'
-    dependsOn: 'Build'
-    condition: | 
-      and
-      (
-        succeeded(),
-        eq(variables['Build.SourceBranch'], 'refs/heads/master')
-      )
-    jobs:
-      - job:      
-        displayName: 'Publish to Private Feed'        
-        pool:
-          vmImage: $(build.pool)
-        steps:
-          - checkout: none
-
-          - download: current
-            artifact: 'packages'
-
-          - task: NuGetCommand@2
-            displayName: 'Push NuGet Package'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
-              nuGetFeedType: 'internal'
-              publishVstsFeed: $(artifact.feed.production)
-              allowPackageConflicts: true
-        
-  # Publish to Nuget
-  - stage: 'PublishReleasePackageToNuGet'
-    displayName: 'Publish to NuGet'
-    dependsOn: 'PublishReleasePackageToAzureDevops'
-    condition: |
-      and
-      (
-        succeeded(),
-        eq(variables['Build.SourceBranch'], 'refs/heads/master')
-      )
-    jobs:
-      - deployment:
-        displayName: 'Publish to NuGet'        
-        pool:
-          vmImage: $(build.pool)
-        environment: 'NuGet-Repo'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: NuGetCommand@2
-                  displayName: 'Push NuGet Package'
-                  inputs:
-                    command: 'push'
-                    packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
-                    nuGetFeedType: 'external'
-                    publishFeedCredentials: 'NuGet'
-                  
+        - task: NuGetCommand@2
+          displayName: 'Push NuGet Package'
+          inputs:
+            command: 'push'
+            packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
+            nuGetFeedType: 'internal'
+            publishVstsFeed: $(nuget.artifact.feed.production)
+            allowPackageConflicts: true
+      
+- stage: Publish_To_NuGet
+  displayName: 'Publish to NuGet'
+  dependsOn: Package
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    )
+  jobs:
+    - deployment:
+      displayName: 'Publish to NuGet'        
+      pool:
+        vmImage: $(build.pool)
+      environment: 'NuGet-Repo'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: NuGetCommand@2
+                displayName: 'Push NuGet Package'
+                inputs:
+                  command: 'push'
+                  packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
+                  nuGetFeedType: 'external'
+                  publishFeedCredentials: 'NuGet'
