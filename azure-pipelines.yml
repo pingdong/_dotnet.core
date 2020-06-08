@@ -57,7 +57,9 @@ stages:
     
     - task: SonarQubeAnalyze@4
       enabled: false
-    # TODO: WhiteSource Bolt
+
+    - task: WhiteSource Bolt@20
+      displayName: 'Run WhiteSource Bolt'
 
 - stage: Unit_Test
   displayName: Unit Testing
