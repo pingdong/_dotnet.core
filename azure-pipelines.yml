@@ -101,10 +101,10 @@ stages:
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Report
       inputs:
-        reports: $(Build.SourcesDirectory)/**/coverage.cobertura.xml
-        targetdir: $(Build.SourcesDirectory)/TestResults/Coverage/
+        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+        targetdir: '$(Build.SourcesDirectory)/TestResults/Coverage/'
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
-        historydir: $(codecoveragehistory.directory)
+        historydir: '$(codecoveragehistory.directory)'
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
@@ -122,7 +122,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
+        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
   
 - stage: Package
   displayName: Packaging
@@ -155,7 +155,7 @@ stages:
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments: '--configuration $(build.configuration.release)'
   
-    - publish: $(Build.ArtifactStagingDirectory)/packages
+    - publish: '$(Build.ArtifactStagingDirectory)/packages'
       displayName: Publishing
       artifact: packages
 
