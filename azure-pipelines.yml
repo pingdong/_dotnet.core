@@ -258,4 +258,3 @@ stages:
                   packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
                   nuGetFeedType: external
                   publishFeedCredentials: NuGet
-                  # VERIFY: Publish to Nuget
