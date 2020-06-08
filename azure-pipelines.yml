@@ -73,7 +73,7 @@ stages:
     variables:
       - group : Build.Unit_Test
       -  name : disable.coverage.autogenerate
-        value : true
+        value : 'true'
       -  name : codecoveragehistory.directory
         value : $(Build.ArtifactStagingDirectory)\history
       -  name : codecoveragehistory.feedName
