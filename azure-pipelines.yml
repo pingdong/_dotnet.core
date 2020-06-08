@@ -12,7 +12,7 @@ stages:
   displayName: 'Preparing'
   jobs:
   - job: Preparing
-    displayName: 'Build preparing'
+    displayName: 'Preparing'
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -32,8 +32,8 @@ stages:
   dependsOn: Prepare
   condition: succeeded()
   jobs:
-  - job: 'Static_Test'
-    displayName: 'Building project'
+  - job: Testing
+    displayName: 'Testing'
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -43,6 +43,7 @@ stages:
     steps: 
     # TODO: SonarQube
     - task: SonarQubePrepare@4
+      displayName: 'SonarQube'
       enabled: false
       inputs:
         SonarQube: 'SonarQube'
@@ -63,8 +64,8 @@ stages:
   dependsOn: Static_Test
   condition: succeeded()
   jobs:
-  - job: Unit_Test
-    displayName: 'Unit Testing'
+  - job: Testing
+    displayName: 'Testing'
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -79,7 +80,7 @@ stages:
         projects: '**/*[Tt]ests/*.csproj'
 
     - task: PublishCodeCoverageResults@1
-      displayName: 'Publish code coverage report'
+      displayName: 'Publish Code Coverage Report'
       inputs:
         codeCoverageTool: 'Cobertura'
         summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
@@ -99,7 +100,7 @@ stages:
     - group: Build.NuGet
     steps:      
     - task: DotNetCoreCLI@2
-      displayName: 'Create NuGet Package - Prerelease Version'
+      displayName: 'Create Pre-release Package'
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
@@ -108,7 +109,7 @@ stages:
         arguments: '--configuration $(build.configuration.release)'
 
     - task: DotNetCoreCLI@2
-      displayName: 'Create NuGet Package'
+      displayName: 'Create Release Package'
       condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
@@ -116,6 +117,7 @@ stages:
         arguments: '--configuration $(build.configuration.release)'
   
     - publish: '$(Build.ArtifactStagingDirectory)/packages'
+      displayName: 'Publishing'
       artifact: 'packages'
 
 # Prerelease
@@ -129,8 +131,8 @@ stages:
       ne(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-    - job:        
-      displayName: 'Publish to Private Feed'        
+    - job: Publishing   
+      displayName: 'Publishing'        
       pool:
         vmImage: $(build.pool)
       workspace:
@@ -160,8 +162,8 @@ stages:
       eq(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-    - job:      
-      displayName: 'Publish to Private Feed'        
+    - job: Publishing 
+      displayName: 'Publishing'        
       pool:
         vmImage: $(build.pool)
       workspace:
@@ -173,7 +175,7 @@ stages:
           artifact: 'packages'
 
         - task: NuGetCommand@2
-          displayName: 'Push NuGet Package'
+          displayName: 'Pushing'
           inputs:
             command: 'push'
             packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
@@ -192,7 +194,7 @@ stages:
     )
   jobs:
     - deployment:
-      displayName: 'Publish to NuGet'        
+      displayName: 'Publishing'        
       pool:
         vmImage: $(build.pool)
       workspace:
@@ -203,7 +205,7 @@ stages:
           deploy:
             steps:
               - task: NuGetCommand@2
-                displayName: 'Push NuGet Package'
+                displayName: 'Pushing'
                 inputs:
                   command: 'push'
                   packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
