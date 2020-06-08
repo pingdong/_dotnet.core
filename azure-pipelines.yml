@@ -77,7 +77,7 @@ stages:
       - name  : codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)/history'
       - name  : codecoveragehistory.package
-        value : '$(Build.Repository.Name)-$(Build.SourceBranchName)'
+        value : '$(Build.Repository.Name).$(Build.SourceBranchName)'
     steps:     
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
