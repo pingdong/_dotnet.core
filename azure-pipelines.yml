@@ -1,5 +1,5 @@
 trigger:
-- *
+- '*'
 
 variables:
 - group : Build.Core
