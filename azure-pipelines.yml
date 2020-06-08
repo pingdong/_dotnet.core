@@ -18,14 +18,6 @@ stages:
     workspace:
       clean: all
     steps:
-    - task: PowerShell@2
-      displayName: 'Set Build Number'
-      inputs:
-        targetType: 'inline'
-        script: |
-          #CustomBuildNumber = $env:BUILD_BUILDNUMBER 
-          write-host "##vso[Build.UpdateBuildNumber]$CustomBuildNumber"
-
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK $(build.dotnet.sdk.version)'
       inputs:
@@ -79,7 +71,7 @@ stages:
         projects: '**/*.csproj'
 
     - task: DotNetCoreCLI@2
-      displayName: 'Build Solution - $(Build.BuildNumber)'
+      displayName: 'Build Solution'
       inputs:
         command: build
         projects: '**/*.csproj'
