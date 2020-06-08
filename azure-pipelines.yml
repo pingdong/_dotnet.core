@@ -88,7 +88,7 @@ stages:
         feedsToUse: internal
         vstsFeed: $(unit_test.coverage.history.feed)
         vstsFeedPackage: $(codecoveragehistory.feedName)
-        vstsPackageVersion: 0.*
+        vstsPackageVersion: '0.*'
 
     - task: DotNetCoreCLI@2
       displayName: Run Unit Tests
@@ -101,8 +101,8 @@ stages:
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Report
       inputs:
-        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
-        targetdir: '$(Build.SourcesDirectory)/TestResults/Coverage/'
+        reports: $(Build.SourcesDirectory)/**/coverage.cobertura.xml
+        targetdir: $(Build.SourcesDirectory)/TestResults/Coverage/
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
         historydir: $(codecoveragehistory.directory)
 
@@ -122,7 +122,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
   
 - stage: Package
   displayName: Packaging
@@ -144,7 +144,7 @@ stages:
       inputs:
         command: pack
         buildProperties: $(nuget.prerelease.suffix)
-        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+        packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments: '--configuration $(build.configuration.release)'
 
     - task: DotNetCoreCLI@2
@@ -152,10 +152,10 @@ stages:
       condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
-        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+        packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments: '--configuration $(build.configuration.release)'
   
-    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+    - publish: $(Build.ArtifactStagingDirectory)/packages
       displayName: Publishing
       artifact: packages
 
