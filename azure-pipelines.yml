@@ -1,18 +1,18 @@
 trigger:
-- '*'
+- *
 
 variables:
 - group : Build.Core
 - group : Build.NuGet
 - name  : projectName
-  value : 'PingDong.Core'
+  value : PingDong.Core
   
 stages:
 - stage: Prepare
-  displayName: 'Preparing'
+  displayName: Preparing
   jobs:
   - job: Preparing
-    displayName: 'Preparing'
+    displayName: Preparing
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -21,19 +21,19 @@ stages:
     - checkout: none
 
     - task: UseDotNet@2
-      displayName: 'Use .NET Core SDK $(build.dotnet.sdk.version)'
+      displayName: Use .NET Core SDK $(build.dotnet.sdk.version)
       inputs:
         packageType: sdk
-        version: '$(build.dotnet.sdk.version)'
+        version: $(build.dotnet.sdk.version)
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - stage: Static_Test
-  displayName: 'Static Testing'
+  displayName: Static Testing
   dependsOn: Prepare
   condition: succeeded()
   jobs:
   - job: Testing
-    displayName: 'Testing'
+    displayName: Testing
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -43,13 +43,13 @@ stages:
     steps: 
     # TODO: SonarQube
     - task: SonarQubePrepare@4
-      displayName: 'SonarQube'
+      displayName: SonarQube
       enabled: false
       inputs:
-        SonarQube: 'SonarQube'
-        scannerMode: 'MSBuild'
-        projectKey: '$(projectName)'
-        projectName: '$(projectName)'
+        SonarQube: SonarQube
+        scannerMode: MSBuild
+        projectKey: $(projectName)
+        projectName: $(projectName)
         extraProperties: |
           sonar.login=$(sonarqube:username)
           sonar.password=$(sonarqube:password)
@@ -60,38 +60,77 @@ stages:
     # TODO: WhiteSource Bolt
 
 - stage: Unit_Test
-  displayName: 'Unit Testing'
+  displayName: Unit Testing
   dependsOn: Static_Test
   condition: succeeded()
   jobs:
   - job: Testing
-    displayName: 'Testing'
+    displayName: Testing
     pool:
       vmImage: $(build.pool)
     workspace:
       clean: all
-    steps:      
+    variables:
+      - group : Build.Unit_Test
+      -  name : disable.coverage.autogenerate
+        value : true
+      -  name : codecoveragehistory.directory
+        value : $(Build.ArtifactStagingDirectory)\history
+      -  name : codecoveragehistory.feedName
+        value : $(Build.Repository.Name)-$(Build.SourceBranchName)
+    steps:     
+    - task: UniversalPackages@0
+      displayName: Get Code Coverage History
+      continueOnError: true
+      inputs:
+        command: download
+        downloadDirectory: $(codecoveragehistory.directory)
+        feedsToUse: internal
+        vstsFeed: $(unit_test.coverage.history.feed)
+        vstsFeedPackage: $(codecoveragehistory.feedName)
+        vstsPackageVersion: 0.*
+
     - task: DotNetCoreCLI@2
-      displayName: 'Run Unit Tests'
+      displayName: Run Unit Tests
       inputs:
         command: test
         arguments: '--configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
-    - task: PublishCodeCoverageResults@1
-      displayName: 'Publish Code Coverage Report'
+    - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+      displayName: Generating Report
       inputs:
-        codeCoverageTool: 'Cobertura'
+        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+        targetdir: '$(Build.SourcesDirectory)/TestResults/Coverage/'
+        reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
+        historydir: $(codecoveragehistory.directory)
+
+    - task: UniversalPackages@0
+      displayName: Publish Code Coverage History
+      inputs:
+        command: publish
+        publishDirectory: $(codecoveragehistory.directory)
+        feedsToUsePublish: internal
+        vstsFeedPublish: $(unit_test.coverage.history.feed)
+        vstsFeedPackagePublish: $(codecoveragehistory.feedName)
+        versionOption: patch
+        packagePublishDescription: Code Coverage History for repository $(Build.Repository.Name) on branch $(Build.SourceBranchName)
+        verbosity: Information
+
+    - task: PublishCodeCoverageResults@1
+      displayName: Publish Code Coverage Report
+      inputs:
+        codeCoverageTool: Cobertura
         summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
   
 - stage: Package
-  displayName: 'Packaging'
+  displayName: Packaging
   dependsOn: Unit_Test
   condition: succeeded()
   jobs:
   - job: Package
-    displayName: 'Packaging'
+    displayName: Packaging
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -100,7 +139,7 @@ stages:
     - group: Build.NuGet
     steps:      
     - task: DotNetCoreCLI@2
-      displayName: 'Create Pre-release Package'
+      displayName: Create Pre-release Package
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
@@ -109,7 +148,7 @@ stages:
         arguments: '--configuration $(build.configuration.release)'
 
     - task: DotNetCoreCLI@2
-      displayName: 'Create Release Package'
+      displayName: Create Release Package
       condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
@@ -117,12 +156,12 @@ stages:
         arguments: '--configuration $(build.configuration.release)'
   
     - publish: '$(Build.ArtifactStagingDirectory)/packages'
-      displayName: 'Publishing'
-      artifact: 'packages'
+      displayName: Publishing
+      artifact: packages
 
 # Prerelease
 - stage: Publish_Prerelease
-  displayName: 'Publish Prerelease'
+  displayName: Publish Prerelease
   dependsOn: Package
   condition: |
     and
@@ -132,7 +171,7 @@ stages:
     )
   jobs:
     - job: Publishing   
-      displayName: 'Publishing'        
+      displayName: Publishing     
       pool:
         vmImage: $(build.pool)
       workspace:
@@ -141,19 +180,19 @@ stages:
         - checkout: none
 
         - download: current
-          artifact: 'packages'
+          artifact: packages
 
         - task: NuGetCommand@2
-          displayName: 'Push NuGet Package'
+          displayName: Push NuGet Package
           inputs:
-            command: 'push'
+            command: push
             packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
-            nuGetFeedType: 'internal'
+            nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
 # Release
 - stage: Publish_To_AzureDevops
-  displayName: 'Publish to Azure DevOps Feed'
+  displayName: Publish to Azure DevOps Feed
   dependsOn: Package
   condition: | 
     and
@@ -163,7 +202,7 @@ stages:
     )
   jobs:
     - job: Publishing 
-      displayName: 'Publishing'        
+      displayName: Publishing      
       pool:
         vmImage: $(build.pool)
       workspace:
@@ -172,19 +211,19 @@ stages:
         - checkout: none
 
         - download: current
-          artifact: 'packages'
+          artifact: packages
 
         - task: NuGetCommand@2
-          displayName: 'Pushing'
+          displayName: Pushing
           inputs:
-            command: 'push'
+            command: push
             packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
-            nuGetFeedType: 'internal'
+            nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.production)
             allowPackageConflicts: true
       
 - stage: Publish_To_NuGet
-  displayName: 'Publish to NuGet'
+  displayName: Publish to NuGet
   dependsOn: Package
   condition: |
     and
@@ -194,20 +233,20 @@ stages:
     )
   jobs:
     - deployment:
-      displayName: 'Publishing'        
+      displayName: Publishing       
       pool:
         vmImage: $(build.pool)
       workspace:
         clean: all
-      environment: 'NuGet-Repo'
+      environment: NuGet-Repo
       strategy:
         runOnce:
           deploy:
             steps:
               - task: NuGetCommand@2
-                displayName: 'Pushing'
+                displayName: Pushing
                 inputs:
-                  command: 'push'
+                  command: push
                   packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
-                  nuGetFeedType: 'external'
-                  publishFeedCredentials: 'NuGet'
+                  nuGetFeedType: external
+                  publishFeedCredentials: NuGet
