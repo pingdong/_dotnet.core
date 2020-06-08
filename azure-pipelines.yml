@@ -106,6 +106,7 @@ stages:
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
         historydir: $(codecoveragehistory.directory)
         # TODO: Coverage History
+        # TODO: Generate Reports
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
@@ -123,7 +124,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/cobertura.xml
+        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
   
 - stage: Package
   displayName: Packaging
@@ -223,7 +224,6 @@ stages:
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.production)
             allowPackageConflicts: true
-            # FIX: Unable to find package
       
 - stage: Publish_To_NuGet
   displayName: Publish to NuGet
