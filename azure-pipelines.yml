@@ -144,7 +144,7 @@ stages:
       inputs:
         command: pack
         buildProperties: $(nuget.prerelease.suffix)
-        packDirectory: $(Build.ArtifactStagingDirectory)/packages
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
         arguments: '--configuration $(build.configuration.release)'
 
     - task: DotNetCoreCLI@2
@@ -152,12 +152,12 @@ stages:
       condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
       inputs:
         command: pack
-        packDirectory: $(Build.ArtifactStagingDirectory)/packages
+        packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
         arguments: '--configuration $(build.configuration.release)'
   
     - publish: '$(Build.ArtifactStagingDirectory)/packages'
       displayName: Publishing
-      artifact: packages
+      artifact: 'packages'
 
 # Prerelease
 - stage: Publish_Prerelease
@@ -180,7 +180,7 @@ stages:
         - checkout: none
 
         - download: current
-          artifact: packages
+          artifact: 'packages'
 
         - task: NuGetCommand@2
           displayName: Push NuGet Package
