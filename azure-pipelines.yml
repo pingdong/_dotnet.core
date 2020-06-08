@@ -75,8 +75,8 @@ stages:
       - name  : disable.coverage.autogenerate
         value : 'true'
       - name  : codecoveragehistory.directory
-        value : '$(Build.ArtifactStagingDirectory)\history'
-      - name  : codecoveragehistory.feedName
+        value : '$(Build.ArtifactStagingDirectory)/history'
+      - name  : codecoveragehistory.package
         value : '$(Build.Repository.Name)-$(Build.SourceBranchName)'
     steps:     
     - task: UniversalPackages@0
@@ -87,7 +87,7 @@ stages:
         downloadDirectory: $(codecoveragehistory.directory)
         feedsToUse: internal
         vstsFeed: $(unit_test.coverage.history.feed)
-        vstsFeedPackage: $(codecoveragehistory.feedName)
+        vstsFeedPackage: $(codecoveragehistory.package)
         vstsPackageVersion: '0.*'
 
     - task: DotNetCoreCLI@2
@@ -113,7 +113,7 @@ stages:
         publishDirectory: $(codecoveragehistory.directory)
         feedsToUsePublish: internal
         vstsFeedPublish: $(unit_test.coverage.history.feed)
-        vstsFeedPackagePublish: $(codecoveragehistory.feedName)
+        vstsFeedPackagePublish: $(codecoveragehistory.package)
         versionOption: patch
         packagePublishDescription: Code Coverage History for repository $(Build.Repository.Name) on branch $(Build.SourceBranchName)
         verbosity: Information
