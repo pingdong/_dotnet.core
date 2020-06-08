@@ -61,8 +61,8 @@ stages:
           - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
             displayName: ReportGenerator
             inputs:
-              reports: '$(Build.SourcesDirectory)\TestResults\Coverage\'
-              targetdir: '$(Build.SourcesDirectory)\TestResults\'
+              reports: '$(Build.SourcesDirectory)/TestResults/Coverage/'
+              targetdir: '$(Build.SourcesDirectory)/TestResults/'
 
           - task: PublishCodeCoverageResults@1
             displayName: 'Publish code coverage report'
