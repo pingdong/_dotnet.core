@@ -75,20 +75,18 @@ stages:
       inputs:
         command: restore
         projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Building'
+      inputs:
+        command: build
+        projects: '**/*.csproj'
     
     - task: DotNetCoreCLI@2
       displayName: 'Run Unit Tests - $(build.configuration.release)'
       inputs:
         command: test
-        arguments: '-configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
-        publishTestResults: true
-        projects: '**/*[Tt]ests/*.csproj'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Run Unit Tests - $(build.configuration.release)'
-      inputs:
-        command: test
-        arguments: '-configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
+        arguments: '--no-build -configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)\TestResults\Coverage\'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
@@ -111,7 +109,13 @@ stages:
       clean: all
     variables:
     - group: Build.NuGet
-    steps:
+    steps:  
+    - task: DotNetCoreCLI@2
+      displayName: 'Nuget Restore'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+    
     - task: DotNetCoreCLI@2
       displayName: 'Create NuGet Package - Prerelease Version'
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
