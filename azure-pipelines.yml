@@ -181,13 +181,13 @@ stages:
         - checkout: none
 
         - download: current
-          artifact: 'packages'
+          artifact: packages
 
         - task: NuGetCommand@2
           displayName: Push NuGet Package
           inputs:
             command: push
-            packagesToPush: '$(Pipeline.Workspace)/packages/prereleases/*.nupkg'
+            packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.prerelease)
             # VERIFY: Pre-release publish
@@ -219,7 +219,7 @@ stages:
           displayName: Pushing
           inputs:
             command: push
-            packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
+            packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.production)
             allowPackageConflicts: true
@@ -255,7 +255,7 @@ stages:
                 displayName: Pushing
                 inputs:
                   command: push
-                  packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+                  packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
                   nuGetFeedType: external
                   publishFeedCredentials: NuGet
                   # VERIFY: Publish to Nuget
