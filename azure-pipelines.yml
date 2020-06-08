@@ -18,18 +18,20 @@ stages:
     workspace:
       clean: all
     steps:
+    - task: PowerShell@2
+      displayName: 'Set Build Number'
+      inputs:
+        targetType: 'inline'
+        script: |
+          #CustomBuildNumber = $env:BUILD_BUILDNUMBER 
+          write-host "##vso[Build.UpdateBuildNumber]$CustomBuildNumber"
+
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK $(build.dotnet.sdk.version)'
       inputs:
         packageType: sdk
         version: '$(build.dotnet.sdk.version)'
         installationPath: $(Agent.ToolsDirectory)/dotnet
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: restore
-        projects: '**/*.csproj'
 
 - stage: Static_Test
   displayName: 'Static Testing'
@@ -71,7 +73,13 @@ stages:
       vmImage: $(build.pool)
     steps: 
     - task: DotNetCoreCLI@2
-      displayName: 'Build Solution - $(build.configuration.release)'
+      displayName: 'Nuget Restore'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Solution - $(Build.BuildNumber)'
       inputs:
         command: build
         projects: '**/*.csproj'
