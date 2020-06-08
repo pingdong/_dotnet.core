@@ -5,7 +5,7 @@ variables:
 - group : Build.Core
 - group : Build.NuGet
 - name  : projectName
-  value : 'PingDong.Core'
+  value : 'pingdong.core'
   
 stages:
 - stage: Prepare
@@ -77,7 +77,7 @@ stages:
       - name  : codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)/history'
       - name  : codecoveragehistory.package
-        value : {{ $(projectName).$(Build.SourceBranchName) | lower }}
+        value : '$(projectName).$(Build.SourceBranchName)'
     steps:     
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
