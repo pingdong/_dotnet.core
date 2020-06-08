@@ -58,11 +58,17 @@ stages:
               publishTestResults: true
               projects: '**/*[Tt]ests/*.csproj'
 
+          - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+            displayName: ReportGenerator
+            inputs:
+              reports: '$(Build.SourcesDirectory)\TestResults\Coverage\'
+              targetdir: '$(Build.SourcesDirectory)\TestResults\'
+
           - task: PublishCodeCoverageResults@1
             displayName: 'Publish code coverage report'
             inputs:
               codeCoverageTool: 'Cobertura'
-              summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/*cobertura.xml'
+              summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/*cobertura.xml'
 
           - task: SonarQubeAnalyze@4
             enabled: false
