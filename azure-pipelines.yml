@@ -102,9 +102,9 @@ stages:
       displayName: Generating Report
       inputs:
         reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
-        targetdir: '$(Build.SourcesDirectory)/TestResults/Coverage/'
+        targetdir: $(Build.SourcesDirectory)/TestResults/Coverage/
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
-        historydir: '$(codecoveragehistory.directory)'
+        #historydir: $(codecoveragehistory.directory)
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
@@ -122,7 +122,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
   
 - stage: Package
   displayName: Packaging
@@ -155,9 +155,9 @@ stages:
         packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
         arguments: '--configuration $(build.configuration.release)'
   
-    - publish: '$(Build.ArtifactStagingDirectory)/packages'
+    - publish: $(Build.ArtifactStagingDirectory)/packages
       displayName: Publishing
-      artifact: 'packages'
+      artifact: packages
 
 # Prerelease
 - stage: Publish_Prerelease
@@ -179,7 +179,7 @@ stages:
       steps:
         - checkout: none
 
-        - download: current
+        - download: $(Build.ArtifactStagingDirectory)/packages
           artifact: 'packages'
 
         - task: NuGetCommand@2
@@ -210,7 +210,7 @@ stages:
       steps:
         - checkout: none
 
-        - download: current
+        - download: $(Build.ArtifactStagingDirectory)/packages
           artifact: packages
 
         - task: NuGetCommand@2
@@ -243,10 +243,15 @@ stages:
         runOnce:
           deploy:
             steps:
+              - checkout: none
+
+              - download: $(Build.ArtifactStagingDirectory)/packages
+                artifact: packages
+
               - task: NuGetCommand@2
                 displayName: Pushing
                 inputs:
                   command: push
-                  packagesToPush: '$(Pipeline.Workspace)/packages/releases/*.nupkg'
+                  packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
                   nuGetFeedType: external
                   publishFeedCredentials: NuGet
