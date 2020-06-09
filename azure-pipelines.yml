@@ -105,8 +105,6 @@ stages:
         targetdir: $(Build.SourcesDirectory)/Coverage
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
         historydir: $(codecoveragehistory.directory)
-        # TODO: Coverage History
-        # TODO: Generate Reports
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
@@ -192,7 +190,6 @@ stages:
             packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
             nuGetFeedType: internal
             publishVstsFeed: $(nuget.artifact.feed.prerelease)
-            # VERIFY: Pre-release publish
 
 # Release
 - stage: Publish_To_AzureDevops
