@@ -74,8 +74,6 @@ stages:
       clean: all
     variables:
       - group : Build.Unit_Test
-      #- name  : disable.coverage.autogenerate
-      #  value : 'true'
       - name  : codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)/history'
       - name  : codecoveragehistory.package
@@ -96,7 +94,7 @@ stages:
       displayName: Run Unit Tests
       inputs:
         command: test
-        arguments: '--configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+        arguments: '--configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
@@ -104,7 +102,7 @@ stages:
       displayName: Generating Report
       inputs:
         reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
-        targetdir: $(Build.SourcesDirectory)/TestResults/Coverage/
+        targetdir: $(Build.SourcesDirectory)/Coverage
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
         historydir: $(codecoveragehistory.directory)
         # TODO: Coverage History
@@ -126,7 +124,8 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: $(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml
+        summaryFileLocation: $(Build.SourcesDirectory)/Coverage/cobertura.xml
+        reportDirectory: $(Build.SourcesDirectory)/Coverage
   
 - stage: Package
   displayName: Packaging
