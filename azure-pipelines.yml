@@ -124,7 +124,7 @@ stages:
       displayName: Publish Code Coverage Report
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: $(Build.SourcesDirectory)/Coverage/cobertura.xml
+        summaryFileLocation: $(Build.SourcesDirectory)/Coverage/Cobertura.xml
         reportDirectory: $(Build.SourcesDirectory)/Coverage
   
 - stage: Package
