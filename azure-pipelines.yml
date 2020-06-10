@@ -76,6 +76,8 @@ stages:
         value : '$(Build.ArtifactStagingDirectory)/history'
       - name  : local.codecoveragehistory.directory
         value : ${{ lower( variables['local.projectName']) }}.$(Build.SourceBranchName)
+      - name  : 'disable.coverage.autogenerate'
+        value : 'true'
     steps:
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
