@@ -2,10 +2,11 @@ trigger:
 - '*'
 
 variables:
-- group : Build.Core
-- group : Build.NuGet
-- name  : projectName
-  value : 'pingdong.core'
+- group : Build
+- name  : local.projectName
+  value : 'PingDong.Core'
+- name  : local.artifact
+  value : 'packages'
   
 stages:
 - stage: Prepare
@@ -27,13 +28,13 @@ stages:
         version: $(build.dotnet.sdk.version)
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
-- stage: Static_Test
-  displayName: Static Testing
+- stage: Test
+  displayName: Testing
   dependsOn: Prepare
   condition: succeeded()
   jobs:
-  - job: Testing
-    displayName: Testing
+  - job: Static_Testing
+    displayName: Static Testing
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -48,11 +49,11 @@ stages:
       inputs:
         SonarQube: SonarQube
         scannerMode: MSBuild
-        projectKey: $(projectName)
-        projectName: $(projectName)
+        projectKey: $(local.projectName)
+        projectName: $(local.projectName)
         extraProperties: |
-          sonar.login=$(sonarqube:username)
-          sonar.password=$(sonarqube:password)
+          sonar.login=$(static_test.sonarqube:username)
+          sonar.password=$(static_test.sonarqube:password)
           sonar.cs.opencover.reportsPaths="$(Build.SourcesDirectory)/TestResults/Coverage.opencover.xml"
     
     - task: SonarQubeAnalyze@4
@@ -63,33 +64,28 @@ stages:
       displayName: 'Run WhiteSource Bolt'
       enabled: false
 
-- stage: Unit_Test
-  displayName: Unit Testing
-  dependsOn: Static_Test
-  condition: succeeded()
-  jobs:
-  - job: Testing
-    displayName: Testing
+  - job: Unit_Testing
+    displayName: Unit_Testing
     pool:
       vmImage: $(build.pool)
     workspace:
       clean: all
     variables:
       - group : Build.Unit_Test
-      - name  : codecoveragehistory.directory
+      - name  : local.codecoveragehistory.directory
         value : '$(Build.ArtifactStagingDirectory)/history'
-      - name  : codecoveragehistory.package
-        value : '$(projectName).$(Build.SourceBranchName)'
-    steps:     
+      - name  : local.codecoveragehistory.directory
+        value : ${{ lower( variables['local.projectName']) }}.$(Build.SourceBranchName)
+    steps:
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
       continueOnError: true
       inputs:
         command: download
-        downloadDirectory: $(codecoveragehistory.directory)
+        downloadDirectory: $(local.codecoveragehistory.directory)
         feedsToUse: internal
         vstsFeed: $(unit_test.coverage.history.feed)
-        vstsFeedPackage: $(codecoveragehistory.package)
+        vstsFeedPackage: $(local.codecoveragehistory.directory)
         vstsPackageVersion: '0.*'
 
     - task: DotNetCoreCLI@2
@@ -106,16 +102,16 @@ stages:
         reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
         targetdir: $(Build.SourcesDirectory)/Coverage
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
-        historydir: $(codecoveragehistory.directory)
+        historydir: $(local.codecoveragehistory.directory)
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
       inputs:
         command: publish
-        publishDirectory: $(codecoveragehistory.directory)
+        publishDirectory: $(local.codecoveragehistory.directory)
         feedsToUsePublish: internal
         vstsFeedPublish: $(unit_test.coverage.history.feed)
-        vstsFeedPackagePublish: $(codecoveragehistory.package)
+        vstsFeedPackagePublish: $(local.codecoveragehistory.directory)
         versionOption: patch
         packagePublishDescription: Code Coverage History for repository $(Build.Repository.Name) on branch $(Build.SourceBranchName)
         verbosity: Information
@@ -129,7 +125,7 @@ stages:
   
 - stage: Package
   displayName: Packaging
-  dependsOn: Unit_Test
+  dependsOn: Test
   condition: succeeded()
   jobs:
   - job: Package
@@ -160,7 +156,7 @@ stages:
   
     - publish: $(Build.ArtifactStagingDirectory)/packages
       displayName: Publishing
-      artifact: packages
+      artifact: $(local.artifact)
 
 # Prerelease
 - stage: Publish_Prerelease
@@ -173,25 +169,27 @@ stages:
       ne(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-    - job: Publishing   
-      displayName: Publishing     
-      pool:
-        vmImage: $(build.pool)
-      workspace:
-        clean: all
-      steps:
-        - checkout: none
+  - job: Publishing   
+    displayName: Publishing     
+    pool:
+      vmImage: $(build.pool)
+    workspace:
+      clean: all
+    variables:
+    - group: Build.NuGet
+    steps:
+      - checkout: none
 
-        - download: current
-          artifact: packages
+      - download: current
+        artifact: $(local.artifact)
 
-        - task: NuGetCommand@2
-          displayName: Push NuGet Package
-          inputs:
-            command: push
-            packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
-            nuGetFeedType: internal
-            publishVstsFeed: $(nuget.artifact.feed.prerelease)
+      - task: NuGetCommand@2
+        displayName: Push NuGet Package
+        inputs:
+          command: push
+          packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
+          nuGetFeedType: internal
+          publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
 # Release
 - stage: Publish_To_AzureDevops
@@ -204,26 +202,28 @@ stages:
       eq(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-    - job: Publishing 
-      displayName: Publishing      
-      pool:
-        vmImage: $(build.pool)
-      workspace:
-        clean: all
-      steps:
-        - checkout: none
+  - job: Publishing 
+    displayName: Publishing      
+    pool:
+      vmImage: $(build.pool)
+    workspace:
+      clean: all
+    variables:
+    - group: Build.NuGet
+    steps:
+      - checkout: none
 
-        - download: current
-          artifact: packages
+      - download: current
+        artifact: $(local.artifact)
 
-        - task: NuGetCommand@2
-          displayName: Pushing
-          inputs:
-            command: push
-            packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
-            nuGetFeedType: internal
-            publishVstsFeed: $(nuget.artifact.feed.production)
-            allowPackageConflicts: true
+      - task: NuGetCommand@2
+        displayName: Pushing
+        inputs:
+          command: push
+          packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
+          nuGetFeedType: internal
+          publishVstsFeed: $(nuget.artifact.feed.production)
+          allowPackageConflicts: true
       
 - stage: Publish_To_NuGet
   displayName: Publish to NuGet
@@ -235,26 +235,28 @@ stages:
       eq(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-    - deployment:
-      displayName: Publishing       
-      pool:
-        vmImage: $(build.pool)
-      workspace:
-        clean: all
-      environment: NuGet-Repo
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-              - checkout: none
+  - deployment:
+    displayName: Publishing
+    pool:
+      vmImage: $(build.pool)
+    workspace:
+      clean: all
+    variables:
+    - group: Build.NuGet
+    environment: NuGet-Repo
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: none
 
-              - download: current
-                artifact: packages
+            - download: current
+              artifact: $(local.artifact)
 
-              - task: NuGetCommand@2
-                displayName: Pushing
-                inputs:
-                  command: push
-                  packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
-                  nuGetFeedType: external
-                  publishFeedCredentials: NuGet
+            - task: NuGetCommand@2
+              displayName: Pushing
+              inputs:
+                command: push
+                packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
+                nuGetFeedType: external
+                publishFeedCredentials: $(nuget.connection)
