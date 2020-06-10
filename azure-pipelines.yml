@@ -261,4 +261,4 @@ stages:
                 command: push
                 packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
                 nuGetFeedType: external
-                publishFeedCredentials: $[ variables['nuget.connection'] ]
+                publishFeedCredentials: ${{ variables['nuget.connection'] }}
