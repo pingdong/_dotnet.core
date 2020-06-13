@@ -169,7 +169,7 @@ stages:
         artifact: $(local.artifact)
 
       - task: NuGetCommand@2
-        displayName: Pushing to Feed: $(nuget.artifact.feed.prerelease)
+        displayName: 'Pushing to Feed: $(nuget.artifact.feed.prerelease)'
         inputs:
           command: push
           packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
@@ -203,7 +203,7 @@ stages:
         artifact: $(local.artifact)
 
       - task: NuGetCommand@2
-        displayName: Pushing to Feed: $(nuget.artifact.feed.production)
+        displayName: 'Pushing to Feed: $(nuget.artifact.feed.production)'
         inputs:
           command: push
           packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
