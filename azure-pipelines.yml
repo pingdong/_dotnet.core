@@ -256,4 +256,4 @@ stages:
             inputs:
               command: custom
               custom: nuget
-              arguments: 'push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg -s $(nuget.org.source) --skip-duplicate'
+              arguments: 'push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg --source $(nuget.org.source) --api-key $(nuget.org.apiKey) --skip-duplicate'
