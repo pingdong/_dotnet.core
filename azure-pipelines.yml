@@ -162,19 +162,19 @@ stages:
     variables:
     - group: Build.NuGet
     steps:
-      - checkout: none
+    - checkout: none
 
-      - download: current
-        displayName: Download artifacts
-        artifact: $(local.artifact)
+    - download: current
+      displayName: Download artifacts
+      artifact: $(local.artifact)
 
-      - task: NuGetCommand@2
-        displayName: 'Pushing to Feed: $(nuget.artifact.feed.prerelease)'
-        inputs:
-          command: push
-          packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
-          nuGetFeedType: internal
-          publishVstsFeed: $(nuget.artifact.feed.prerelease)
+    - task: NuGetCommand@2
+      displayName: 'Pushing to Feed: $(nuget.artifact.feed.prerelease)'
+      inputs:
+        command: push
+        packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
+        nuGetFeedType: internal
+        publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
 # Release
 - stage: Publish_To_AzureDevops
@@ -196,20 +196,20 @@ stages:
     variables:
     - group: Build.NuGet
     steps:
-      - checkout: none
+    - checkout: none
 
-      - download: current
-        displayName: Download artifacts
-        artifact: $(local.artifact)
+    - download: current
+      displayName: Download artifacts
+      artifact: $(local.artifact)
 
-      - task: NuGetCommand@2
-        displayName: 'Pushing to Feed: $(nuget.artifact.feed.production)'
-        inputs:
-          command: push
-          packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
-          nuGetFeedType: internal
-          publishVstsFeed: $(nuget.artifact.feed.production)
-          allowPackageConflicts: true
+    - task: NuGetCommand@2
+      displayName: 'Pushing to Feed: $(nuget.artifact.feed.production)'
+      inputs:
+        command: push
+        packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
+        nuGetFeedType: internal
+        publishVstsFeed: $(nuget.artifact.feed.production)
+        allowPackageConflicts: true
       
 - stage: Publish_To_NuGet
   displayName: Publish to NuGet
@@ -234,19 +234,26 @@ stages:
       runOnce:
         deploy:
           steps:
-            - checkout: none
+          - checkout: none
 
-            - download: current
-              displayName: Download artifacts
-              artifact: $(local.artifact)
+          - download: current
+            displayName: Download artifacts
+            artifact: $(local.artifact)
 
-            - task: NuGetAuthenticate@0
+          # - task: NuGetAuthenticate@0
 
-            - task: NuGetToolInstaller@1
-              displayName: Installing NuGet Tool
-              inputs:
-                versionSpec: '*'
-                checkLatest: true
+          # - task: NuGetToolInstaller@1
+          #   displayName: Installing NuGet Tool
+          #   inputs:
+          #     versionSpec: '*'
+          #     checkLatest: true
 
-            - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
-              displayName: Pushing to NuGet.org
+          # - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+          #   displayName: Pushing to NuGet.org
+
+          - task: DotNetCoreCLI@2
+            displayName: Pushing to NuGet.org
+            inputs:
+              command: custom
+              custom: nuget
+              arguments: 'push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg -s $(nuget.org.source) --skip-duplicate'
