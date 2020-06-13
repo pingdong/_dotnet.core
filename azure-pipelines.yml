@@ -238,8 +238,13 @@ stages:
               artifact: $(local.artifact)
 
             - task: NuGetAuthenticate@0
-            inputs:
-              nuGetServiceConnections: NuGet.org
+              inputs:
+                nuGetServiceConnections: NuGet.org
 
-            - script: dotnet nuget push --api-key AzureArtifacts --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg
+            - task: NuGetToolInstaller@1
+              inputs:
+                versionSpec: '*'
+                checkLatest: true
+
+            - script: nuget push --api-key AzureArtifacts --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg -SkipDuplicate
               displayName: Pushing to NuGet.org
