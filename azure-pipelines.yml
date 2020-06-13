@@ -240,11 +240,11 @@ stages:
               displayName: Download artifacts
               artifact: $(local.artifact)
 
-            # - task: NuGetToolInstaller@1
-            #   displayName: Installing NuGet Tool
-            #   inputs:
-            #     versionSpec: '*'
-            #     checkLatest: true
+            - task: NuGetToolInstaller@1
+              displayName: Installing NuGet Tool
+              inputs:
+                versionSpec: '*'
+                checkLatest: true
 
             - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
               displayName: Pushing to NuGet.org
