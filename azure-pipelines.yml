@@ -245,9 +245,9 @@ stages:
 
             - script: | 
                 nuget push 
-                  -SkipDuplicate 
-                  -NoSymbols 
-                  -ApiKey $(nuget.org.apiKey) 
-                  -Source $(nuget.org.source)
                   $(Pipeline.Workspace)/packages/*.nupkg
+                  $(nuget.org.apiKey)
+                  -SkipDuplicate 
+                  -NoSymbols
+                  
               displayName: Pushing to NuGet.org
