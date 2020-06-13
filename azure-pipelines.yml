@@ -30,10 +30,10 @@ stages:
         projectName: ${{ lower( variables['local.projectName']) }}
     
     - task: DotNetCoreCLI@2
-      displayName: Build
+      displayName: Building
       inputs:
         projects: '**/*.sln'
-        arguments: '--configuration $(BuildConfiguration)'
+        arguments: '--configuration $(build.configuration.release)'
 
     - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
       displayName: Run Code Analysis
