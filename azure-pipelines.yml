@@ -248,5 +248,12 @@ stages:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: nuget.exe push $(Pipeline.Workspace)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+            #- script: nuget.exe push $(Pipeline.Workspace)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+            #  displayName: Pushing to NuGet.org
+
+            - task: PowerShell@2
               displayName: Pushing to NuGet.org
+              inputs:
+                targetType: 'inline'
+                script: nuget.exe push $(Pipeline.Workspace)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+                pwsh: true
