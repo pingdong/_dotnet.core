@@ -56,7 +56,7 @@ stages:
       displayName: Prepare Analysis on SonarCloud
       inputs:
         SonarCloud: SonarCloud
-        organization: $(static_test.sonarcloud.organization)
+        organization: $(unit_test.sonarcloud.organization)
         projectKey: ${{ lower( variables['local.projectName']) }}
         projectName: ${{ lower( variables['local.projectName']) }}
 
