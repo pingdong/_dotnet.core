@@ -242,5 +242,5 @@ stages:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: nuget push --api-key $(nuget.org.apiKey) --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg -SkipDuplicate
+            - script: nuget push -SkipDuplicate -ApiKey $(nuget.org.apiKey) -Source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg
               displayName: Pushing to NuGet.org
