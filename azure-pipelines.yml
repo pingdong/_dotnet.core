@@ -28,12 +28,11 @@ stages:
         organization: $(static_test.sonarcloud.organization)
         projectKey: ${{ lower( variables['local.projectName']) }}
         projectName: ${{ lower( variables['local.projectName']) }}
-    
-    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
+        
     - task: DotNetCoreCLI@2
       displayName: Building   
       inputs:
-        projects: '**/*.sln'
+        projects: '**/*.sln'    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
         arguments: '--configuration $(build.configuration.release)'
 
     - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
@@ -44,7 +43,6 @@ stages:
 
     - task: WhiteSource Bolt@20
       displayName: 'Run WhiteSource Bolt'
-      enabled: false
 
   - job: Unit_Testing
     displayName: Unit_Testing
@@ -53,13 +51,13 @@ stages:
     workspace:
       clean: all
     variables:
-      - group : Build.Unit_Test
-      - name  : local.codecoveragehistory.directory
-        value : '$(Build.ArtifactStagingDirectory)/history'
-      - name  : local.codecoveragehistory.directory
-        value : ${{ lower( variables['local.projectName']) }}.$(Build.SourceBranchName)
-      - name  : 'disable.coverage.autogenerate'
-        value : 'true'
+    - group : Build.Unit_Test
+    - name  : local.codecoveragehistory.directory
+      value : '$(Build.ArtifactStagingDirectory)/history'
+    - name  : local.codecoveragehistory.directory
+      value : ${{ lower( variables['local.projectName']) }}.$(Build.SourceBranchName)
+    - name  : 'disable.coverage.autogenerate'
+      value : 'true'
     steps:
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
@@ -239,17 +237,6 @@ stages:
           - download: current
             displayName: Download artifacts
             artifact: $(local.artifact)
-
-          # - task: NuGetAuthenticate@0
-
-          # - task: NuGetToolInstaller@1
-          #   displayName: Installing NuGet Tool
-          #   inputs:
-          #     versionSpec: '*'
-          #     checkLatest: true
-
-          # - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
-          #   displayName: Pushing to NuGet.org
 
           - task: DotNetCoreCLI@2
             displayName: Pushing to NuGet.org
