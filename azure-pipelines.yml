@@ -11,8 +11,6 @@ variables:
 stages:
 - stage: Test
   displayName: Testing
-  dependsOn: Prepare
-  condition: succeeded()
   jobs:
   - job: Static_Testing
     displayName: Static Testing
