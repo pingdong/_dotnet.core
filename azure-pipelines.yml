@@ -243,11 +243,5 @@ stages:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: | 
-                nuget push 
-                  $(Pipeline.Workspace)/packages/*.nupkg
-                  $(nuget.org.apiKey)
-                  -SkipDuplicate 
-                  -NoSymbols
-                  
+            - script: nuget push $(Pipeline.Workspace)/packages/*.nupkg $(nuget.org.apiKey) -SkipDuplicate -NoSymbols                 
               displayName: Pushing to NuGet.org
