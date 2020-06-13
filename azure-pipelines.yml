@@ -29,8 +29,9 @@ stages:
         projectKey: ${{ lower( variables['local.projectName']) }}
         projectName: ${{ lower( variables['local.projectName']) }}
     
+    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
     - task: DotNetCoreCLI@2
-      displayName: Building
+      displayName: Building   
       inputs:
         projects: '**/*.sln'
         arguments: '--configuration $(build.configuration.release)'
