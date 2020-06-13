@@ -243,3 +243,4 @@ stages:
                 packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
                 nuGetFeedType: external
                 publishFeedCredentials: NuGet.org
+                arguments: "-SkipDuplicate"
