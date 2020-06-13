@@ -4,30 +4,11 @@ trigger:
 variables:
 - group : Build
 - name  : local.projectName
-  value : 'PingDong.Core'
+  value : 'dotnet.core'
 - name  : local.artifact
   value : 'packages'
   
 stages:
-- stage: Prepare
-  displayName: Preparing
-  jobs:
-  - job: Preparing
-    displayName: Preparing
-    pool:
-      vmImage: $(build.pool)
-    workspace:
-      clean: all
-    steps:
-    - checkout: none
-
-    - task: UseDotNet@2
-      displayName: Use .NET Core SDK $(build.dotnet.sdk.version)
-      inputs:
-        packageType: sdk
-        version: $(build.dotnet.sdk.version)
-        installationPath: $(Agent.ToolsDirectory)/dotnet
-
 - stage: Test
   displayName: Testing
   dependsOn: Prepare
@@ -40,25 +21,8 @@ stages:
     workspace:
       clean: all
     variables:
-    - group: Build.Static_Test
+    - group : Build.Static_Test
     steps: 
-    # TODO: SonarQube
-    - task: SonarQubePrepare@4
-      displayName: SonarQube
-      enabled: false
-      inputs:
-        SonarQube: SonarQube
-        scannerMode: MSBuild
-        projectKey: $(local.projectName)
-        projectName: $(local.projectName)
-        extraProperties: |
-          sonar.login=$(static_test.sonarqube:username)
-          sonar.password=$(static_test.sonarqube:password)
-          sonar.cs.opencover.reportsPaths="$(Build.SourcesDirectory)/TestResults/Coverage.opencover.xml"
-    
-    - task: SonarQubeAnalyze@4
-      enabled: false
-
     # TODO: Improve WhiteSource Bolt
     - task: WhiteSource Bolt@20
       displayName: 'Run WhiteSource Bolt'
@@ -89,6 +53,14 @@ stages:
         vstsFeed: $(unit_test.coverage.history.feed)
         vstsFeedPackage: $(local.codecoveragehistory.directory)
         vstsPackageVersion: '0.*'
+    
+    - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+      displayName: Prepare Analysis on SonarCloud
+      inputs:
+        SonarCloud: SonarCloud
+        organization: $(static_test.sonarcloud.organization)
+        projectKey: ${{ lower( variables['local.projectName']) }}
+        projectName: ${{ lower( variables['local.projectName']) }}
 
     - task: DotNetCoreCLI@2
       displayName: Run Unit Tests
@@ -98,8 +70,14 @@ stages:
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
+    - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+      displayName: Run Code Analysis
+
+    - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+      displayName: Publish Quality Gate Result
+
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
-      displayName: Generating Report
+      displayName: Generating Coverage Report
       inputs:
         reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
         targetdir: $(Build.SourcesDirectory)/Coverage
