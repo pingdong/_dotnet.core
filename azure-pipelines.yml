@@ -237,14 +237,10 @@ stages:
             - download: current
               artifact: $(local.artifact)
 
-            - task: NuGetAuthenticate@0
-              inputs:
-                nuGetServiceConnections: NuGet.org
-
             - task: NuGetToolInstaller@1
               inputs:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: nuget push --api-key AzureArtifacts --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg -SkipDuplicate
+            - script: nuget push --api-key $(nuget.org.apiKey) --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg -SkipDuplicate
               displayName: Pushing to NuGet.org
