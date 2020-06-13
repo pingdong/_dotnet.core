@@ -222,7 +222,7 @@ stages:
   - deployment:
     displayName: Publishing
     pool:
-      vmImage: $(build.pool)
+      vmImage: $(build.pool.windows)
     workspace:
       clean: all
     variables:
@@ -237,11 +237,8 @@ stages:
             - download: current
               artifact: $(local.artifact)
 
-            - task: NuGetCommand@2
-              displayName: Pushing
-              inputs:
-                command: push
-                packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
-                nuGetFeedType: external
-                publishFeedCredentials: NuGet.org
-                allowPackageConflicts: true
+            - task: NuGetAuthenticate@0inputs:
+              nuGetServiceConnections: NuGet.org
+
+            - script: dotnet nuget push --api-key AzureArtifacts --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg
+              displayName: Pushing to NuGet.org
