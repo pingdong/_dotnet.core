@@ -238,9 +238,16 @@ stages:
               artifact: $(local.artifact)
 
             - task: NuGetToolInstaller@1
+              displayName: Installing NuGet Tool
               inputs:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: nuget push -SkipDuplicate -ApiKey $(nuget.org.apiKey) -Source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg
+            - script: | 
+                nuget push 
+                  -SkipDuplicate 
+                  -NoSymbols 
+                  -ApiKey $(nuget.org.apiKey) 
+                  -Source $(nuget.org.source)
+                  $(Pipeline.Workspace)/packages/*.nupkg
               displayName: Pushing to NuGet.org
