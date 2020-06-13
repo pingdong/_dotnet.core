@@ -246,17 +246,5 @@ stages:
             #     versionSpec: '*'
             #     checkLatest: true
 
-            # - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
-            #   displayName: Pushing to NuGet.org
-
-            - task: NuGetAuthenticate@0
-              displayName: NuGet Authenticate
-              nuGetServiceConnections: NuGet.org
-
-            - task: NuGetCommand@2
-              displayName: Pushing
-              inputs:
-                command: push
-                packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
-                nuGetFeedType: external
-                allowPackageConflicts: true
+            - script: nuget push $(Agent.BuildDirectory)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+              displayName: Pushing to NuGet.org
