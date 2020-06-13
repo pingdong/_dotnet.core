@@ -229,6 +229,7 @@ stages:
       clean: all
     variables:
     - group: Build.NuGet
+    environment: NuGet-Repo
     strategy:
       runOnce:
         deploy:
