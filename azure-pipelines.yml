@@ -237,7 +237,8 @@ stages:
             - download: current
               artifact: $(local.artifact)
 
-            - task: NuGetAuthenticate@0inputs:
+            - task: NuGetAuthenticate@0
+            inputs:
               nuGetServiceConnections: NuGet.org
 
             - script: dotnet nuget push --api-key AzureArtifacts --source $(nuget.org.source) $(Pipeline.Workspace)/packages/*.nupkg
