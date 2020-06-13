@@ -240,6 +240,8 @@ stages:
               displayName: Download artifacts
               artifact: $(local.artifact)
 
+            - task: NuGetAuthenticate@0
+
             - task: NuGetToolInstaller@1
               displayName: Installing NuGet Tool
               inputs:
