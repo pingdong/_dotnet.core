@@ -248,5 +248,5 @@ stages:
                 versionSpec: '*'
                 checkLatest: true
 
-            - script: /opt/hostedtoolcache/NuGet/5.6.0/x64/nuget push $(Pipeline.Workspace)/$(local.artifact)/PingDong.Core.1.0.0.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
+            - script: nuget.exe push $(Pipeline.Workspace)/$(local.artifact)/*.nupkg $(nuget.org.apiKey) -Source $(nuget.org.source) -SkipDuplicate -NoSymbols
               displayName: Pushing to NuGet.org
