@@ -44,6 +44,7 @@ stages:
 
     - task: WhiteSource Bolt@20
       displayName: 'Run WhiteSource Bolt'
+      enabled: false
 
   - job: Unit_Testing
     displayName: Unit_Testing
@@ -243,4 +244,4 @@ stages:
                 packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
                 nuGetFeedType: external
                 publishFeedCredentials: NuGet.org
-                arguments: "-SkipDuplicate"
+                allowPackageConflicts: true
