@@ -165,10 +165,11 @@ stages:
       - checkout: none
 
       - download: current
+        displayName: Download artifacts
         artifact: $(local.artifact)
 
       - task: NuGetCommand@2
-        displayName: Push NuGet Package
+        displayName: Pushing to Feed: $(nuget.artifact.feed.prerelease)
         inputs:
           command: push
           packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
@@ -198,10 +199,11 @@ stages:
       - checkout: none
 
       - download: current
+        displayName: Download artifacts
         artifact: $(local.artifact)
 
       - task: NuGetCommand@2
-        displayName: Pushing
+        displayName: Pushing to Feed: $(nuget.artifact.feed.production)
         inputs:
           command: push
           packagesToPush: '$(Pipeline.Workspace)/packages/*.nupkg'
@@ -227,7 +229,6 @@ stages:
       clean: all
     variables:
     - group: Build.NuGet
-    environment: NuGet-Repo
     strategy:
       runOnce:
         deploy:
@@ -235,7 +236,10 @@ stages:
             - checkout: none
 
             - download: current
+              displayName: Download artifacts
               artifact: $(local.artifact)
+
+            - task: NuGetAuthenticate@0
 
             - task: NuGetToolInstaller@1
               displayName: Installing NuGet Tool
