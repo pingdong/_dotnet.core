@@ -20,7 +20,27 @@ stages:
       clean: all
     variables:
     - group : Build.Static_Test
-    steps: 
+    steps:    
+    - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+      displayName: Prepare Analysis on SonarCloud
+      inputs:
+        SonarCloud: SonarCloud
+        organization: $(static_test.sonarcloud.organization)
+        projectKey: ${{ lower( variables['local.projectName']) }}
+        projectName: ${{ lower( variables['local.projectName']) }}
+    
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        projects: '**/*.sln'
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+      displayName: Run Code Analysis
+
+    - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+      displayName: Publish Quality Gate Result
+
     # TODO: Improve WhiteSource Bolt
     - task: WhiteSource Bolt@20
       displayName: 'Run WhiteSource Bolt'
@@ -51,14 +71,6 @@ stages:
         vstsFeed: $(unit_test.coverage.history.feed)
         vstsFeedPackage: $(local.codecoveragehistory.directory)
         vstsPackageVersion: '0.*'
-    
-    - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
-      displayName: Prepare Analysis on SonarCloud
-      inputs:
-        SonarCloud: SonarCloud
-        organization: $(unit_test.sonarcloud.organization)
-        projectKey: ${{ lower( variables['local.projectName']) }}
-        projectName: ${{ lower( variables['local.projectName']) }}
 
     - task: DotNetCoreCLI@2
       displayName: Run Unit Tests
@@ -67,12 +79,6 @@ stages:
         arguments: '--configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
-
-    - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
-      displayName: Run Code Analysis
-
-    - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
-      displayName: Publish Quality Gate Result
 
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Coverage Report
