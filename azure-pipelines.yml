@@ -143,7 +143,12 @@ stages:
 
     - task: DotNetCoreCLI@2
       displayName: Create Release Package
-      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      condition: |
+        or
+        (
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          eq(variables['Build.Reason'], 'PullRequest')
+        )
       inputs:
         command: pack
         packDirectory: '$(Build.ArtifactStagingDirectory)/$(local.artifact)'
@@ -151,6 +156,7 @@ stages:
   
     - publish: $(Build.ArtifactStagingDirectory)/$(local.artifact)
       displayName: Publishing
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       artifact: $(local.artifact)
 
 - stage: Publish
