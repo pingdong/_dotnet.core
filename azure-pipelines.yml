@@ -37,7 +37,7 @@ stages:
         projectName: ${{ lower( variables['local.projectName']) }}
         extraProperties: |
           sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/*.trx
-          sonar.coverageReportPaths=$(Build.SourcesDirectory)/Coverage/SonarQube.xml
+          sonar.coverageReportPaths=$(Build.SourcesDirectory)/Coverage/coverage.xml
           sonar.coverage.exclusions=**/*[Uu]nit[Tt]ests*/**/*
 
     - task: UniversalPackages@0
