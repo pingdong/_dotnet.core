@@ -12,39 +12,6 @@ stages:
 - stage: Test
   displayName: Testing
   jobs:
-  - job: Static_Testing
-    displayName: Static Testing
-    pool:
-      vmImage: $(build.pool)
-    workspace:
-      clean: all
-    variables:
-    - group : Build.Static_Test
-    steps:    
-    - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
-      displayName: Prepare Analysis on SonarCloud
-      inputs:
-        SonarCloud: SonarCloud
-        organization: $(static_test.sonarcloud.organization)
-        projectKey: ${{ lower( variables['local.projectName']) }}
-        projectName: ${{ lower( variables['local.projectName']) }}
-        
-    - task: DotNetCoreCLI@2
-      displayName: Building   
-      inputs:
-        projects: '**/*.sln'    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
-        arguments: '--configuration $(build.configuration.release)'
-
-    - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
-      displayName: Run Code Analysis
-
-    - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
-      displayName: Publish Quality Gate Result
-
-    - task: WhiteSource Bolt@20
-      displayName: 'Run WhiteSource Bolt'
-      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')  # Free tier only allow 5 tests per repo per day, so only enable in master
-
   - job: Unit_Testing
     displayName: Unit_Testing
     pool:
@@ -60,6 +27,15 @@ stages:
     - name  : 'disable.coverage.autogenerate'
       value : 'true'
     steps:
+    # Preparing
+    - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+      displayName: Prepare Analysis on SonarCloud
+      inputs:
+        SonarCloud: SonarCloud
+        organization: $(unit_test.sonarcloud.organization)
+        projectKey: ${{ lower( variables['local.projectName']) }}
+        projectName: ${{ lower( variables['local.projectName']) }}
+
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
       continueOnError: true
@@ -71,6 +47,7 @@ stages:
         vstsFeedPackage: $(local.codecoveragehistory.directory)
         vstsPackageVersion: '0.*'
 
+    # Testing
     - task: DotNetCoreCLI@2
       displayName: Run Unit Tests
       inputs:
@@ -79,6 +56,7 @@ stages:
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
+    # Coverage Report
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Coverage Report
       inputs:
@@ -105,6 +83,17 @@ stages:
         codeCoverageTool: Cobertura
         summaryFileLocation: $(Build.SourcesDirectory)/Coverage/Cobertura.xml
         reportDirectory: $(Build.SourcesDirectory)/Coverage
+
+    # Code Analysis
+    - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+      displayName: Run Code Analysis
+
+    - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+      displayName: Publish Quality Gate Result
+
+    - task: WhiteSource Bolt@20
+      displayName: 'Run WhiteSource Bolt'
+      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')  # Free tier only allow 5 tests per repo per day, so only enable in master
   
 - stage: Package
   displayName: Packaging
@@ -174,7 +163,6 @@ stages:
         packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
         nuGetFeedType: internal
         publishVstsFeed: $(nuget.artifact.feed.prerelease)
-
 # Release
 - stage: Publish_To_AzureDevops
   displayName: Publish to Azure DevOps Feed
