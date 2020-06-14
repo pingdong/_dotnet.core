@@ -13,7 +13,7 @@ stages:
   displayName: Testing
   jobs:
   - job: Unit_Testing
-    displayName: Unit_Testing
+    displayName: Unit Testing
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -123,8 +123,8 @@ stages:
   dependsOn: Test
   condition: succeeded()
   jobs:
-  - job: Package
-    displayName: Packaging
+  - job: Build
+    displayName: Building
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -164,7 +164,7 @@ stages:
     )
   jobs:
   - job: Publishing_Prerelease
-    displayName: Publishing Prerelease     
+    displayName: Publishing to Prerelease     
     pool:
       vmImage: $(build.pool)
     workspace:
