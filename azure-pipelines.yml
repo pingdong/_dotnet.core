@@ -52,6 +52,7 @@ stages:
       displayName: Building   
       inputs:
         projects: '**/*.sln'    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
+                                # for SonarQube
         arguments: '--configuration $(build.configuration.release)'
 
     # Testing
