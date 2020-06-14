@@ -114,7 +114,7 @@ stages:
       condition: |
         and 
         (
-          eq(variables['Build.SourceBranch'], 'refs/heads/master')  
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
           ne(variables['Build.Reason'], 'PullRequest')
         )
 
