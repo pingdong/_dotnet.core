@@ -47,12 +47,19 @@ stages:
         vstsFeedPackage: $(local.codecoveragehistory.directory)
         vstsPackageVersion: '0.*'
 
+    # Building
+    - task: DotNetCoreCLI@2
+      displayName: Building   
+      inputs:
+        projects: '**/*.sln'    # The <ProjectGuid> element is not required if you build a solution (sln) containing that project.
+        arguments: '--configuration $(build.configuration.release)'
+
     # Testing
     - task: DotNetCoreCLI@2
       displayName: Run Unit Tests
       inputs:
         command: test
-        arguments: '--configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
+        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
