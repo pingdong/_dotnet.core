@@ -63,7 +63,7 @@ stages:
       displayName: Run Unit Tests
       inputs:
         command: test
-        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura,opencover\"'
+        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat="cobertura,opencover"'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
