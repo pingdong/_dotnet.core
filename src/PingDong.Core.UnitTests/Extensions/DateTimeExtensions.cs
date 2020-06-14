@@ -90,11 +90,12 @@ namespace PingDong
             public void Utc()
             {
                 var now = DateTime.Now;
+                var timezone = TimeZoneInfo.Local;
 
-                var local = now.ToUniversalTime().ToLocalDateTime(DateTimeExtensions.NewZealandStandardTime.Id);
+                var local = now.ToUniversalTime().ToLocalDateTime(timezone.Id);
                 Assert.Equal(now, local);
 
-                local = now.ToUniversalTime().ToLocalDateTime(DateTimeExtensions.NewZealandStandardTime);
+                local = now.ToUniversalTime().ToLocalDateTime(timezone);
                 Assert.Equal(now, local);
             }
 
@@ -102,11 +103,12 @@ namespace PingDong
             public void Local()
             {
                 var now = DateTime.Now;
+                var timezone = TimeZoneInfo.Local;
 
-                var local = now.ToLocalDateTime(DateTimeExtensions.NewZealandStandardTime.Id);
+                var local = now.ToLocalDateTime(timezone.Id);
                 Assert.Equal(now, local);
 
-                local = now.ToLocalDateTime(DateTimeExtensions.NewZealandStandardTime);
+                local = now.ToLocalDateTime(timezone);
                 Assert.Equal(now, local);
             }
         }
@@ -213,7 +215,7 @@ namespace PingDong
             public void Valid_Id()
             {
                 var utc = DateTime.UtcNow;
-                var nzst = DateTimeExtensions.GetCurrentTime(DateTimeExtensions.NewZealandStandardTime.Id);
+                var nzst = DateTimeExtensions.GetCurrentTime(TimeZoneInfo.Local.Id);
 
                 Assert.True(nzst.ToUniversalTime().ToTimestampWithSecond() - utc.ToTimestampWithSecond() < 1);
             }
@@ -222,7 +224,7 @@ namespace PingDong
             public void Valid()
             {
                 var utc = DateTime.UtcNow;
-                var nzst = DateTimeExtensions.GetCurrentTime(DateTimeExtensions.NewZealandStandardTime);
+                var nzst = DateTimeExtensions.GetCurrentTime(TimeZoneInfo.Local);
 
                 Assert.True(nzst.ToUniversalTime().ToTimestampWithSecond() - utc.ToTimestampWithSecond() < 10);
             }
