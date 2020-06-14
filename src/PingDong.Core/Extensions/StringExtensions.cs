@@ -1,7 +1,4 @@
-﻿using System;
-using PingDong.Validation;
-
-namespace PingDong.Shared
+﻿namespace PingDong
 {
     public static class StringExtensions
     {
@@ -12,7 +9,7 @@ namespace PingDong.Shared
         /// <returns></returns>
         public static string FirstCharToUpper(this string value)
         {
-            value.EnsureNotNullOrDefault(nameof(value));
+            value.EnsureNotNullOrWhitespace(nameof(value));
 
             return char.ToUpper(value[0]) + value.Substring(1);
         }
@@ -24,7 +21,7 @@ namespace PingDong.Shared
         /// <returns></returns>
         public static string FirstCharToLower(this string value)
         {
-            value.EnsureNotNullOrDefault(nameof(value));
+            value.EnsureNotNullOrWhitespace(nameof(value));
 
             return char.ToLower(value[0]) + value.Substring(1);
         }
