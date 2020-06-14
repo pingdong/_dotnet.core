@@ -138,7 +138,7 @@ stages:
       displayName: Publishing
       artifact: $(local.artifact)
 
-# Prerelease
+# Publish
 - stage: Publish_Prerelease
   displayName: Publish Prerelease
   dependsOn: Package
@@ -171,9 +171,9 @@ stages:
         packagesToPush: '$(Agent.BuildDirectory)/$(local.artifact)/*.nupkg'
         nuGetFeedType: internal
         publishVstsFeed: $(nuget.artifact.feed.prerelease)
-# Release
-- stage: Publish_To_AzureDevops
-  displayName: Publish to Azure DevOps Feed
+
+- stage: Publish_Release
+  displayName: Publish to Repo
   dependsOn: Package
   condition: | 
     and
@@ -182,8 +182,8 @@ stages:
       eq(variables['Build.SourceBranch'], 'refs/heads/master')
     )
   jobs:
-  - job: Publishing 
-    displayName: Publishing      
+  - job: Publishing_AzureDevops
+    displayName: Publishing to Azure DevOps Feed  
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -205,19 +205,9 @@ stages:
         nuGetFeedType: internal
         publishVstsFeed: $(nuget.artifact.feed.production)
         allowPackageConflicts: true
-      
-- stage: Publish_To_NuGet
-  displayName: Publish to NuGet
-  dependsOn: Package
-  condition: |
-    and
-    (
-      succeeded(),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master')
-    )
-  jobs:
+
   - deployment:
-    displayName: Publishing
+    displayName: Publishing to NuGet.org
     pool:
       vmImage: $(build.pool)
     workspace:
