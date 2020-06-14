@@ -63,7 +63,7 @@ stages:
       displayName: Run Unit Tests
       inputs:
         command: test
-        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat="cobertura,opencover"'
+        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
@@ -71,7 +71,7 @@ stages:
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Coverage Report
       inputs:
-        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+        reports: '$(Build.SourcesDirectory)/**/coverage.opencover.xml'
         targetdir: $(Build.SourcesDirectory)/Coverage
         reporttypes: HtmlInline_AzurePipelines;Cobertura;Badges
         historydir: $(local.codecoveragehistory.directory)
