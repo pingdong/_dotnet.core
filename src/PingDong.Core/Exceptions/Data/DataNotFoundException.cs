@@ -19,5 +19,12 @@ namespace PingDong.Data
             : base(message, inner)
         {
         }
+
+        protected DataNotFoundException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
 }

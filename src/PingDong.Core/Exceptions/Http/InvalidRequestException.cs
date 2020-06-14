@@ -19,5 +19,12 @@ namespace PingDong.Http
             : base(message, inner)
         {
         }
+
+        protected InvalidRequestException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
 }

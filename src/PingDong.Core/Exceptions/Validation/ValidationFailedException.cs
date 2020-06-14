@@ -31,6 +31,13 @@ namespace PingDong.Validation
             Errors = validationErrors;
         }
 
+        protected ValidationFailedException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context)
+            : base(info, context)
+        {
+        }
+
         public IEnumerable<ValidationError> Errors { get; }
     }
 }
