@@ -138,23 +138,18 @@ stages:
       displayName: Publishing
       artifact: $(local.artifact)
 
-# Publish
-- stage: Publish_Prerelease
-  displayName: Publish Prerelease
+- stage: Publish
+  displayName: Publish
   dependsOn: Package
-  condition: |
-    and
-    (
-      succeeded(),
-      ne(variables['Build.SourceBranch'], 'refs/heads/master')
-    )
+  condition: succeeded()
   jobs:
-  - job: Publishing   
-    displayName: Publishing     
+  - job: Publishing_Prerelease
+    displayName: Publishing Prerelease     
     pool:
       vmImage: $(build.pool)
     workspace:
       clean: all
+    condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
     variables:
     - group: Build.NuGet
     steps:
@@ -172,22 +167,13 @@ stages:
         nuGetFeedType: internal
         publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
-- stage: Publish_Release
-  displayName: Publish to Repo
-  dependsOn: Package
-  condition: | 
-    and
-    (
-      succeeded(),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master')
-    )
-  jobs:
   - job: Publishing_AzureDevops
     displayName: Publishing to Azure DevOps Feed  
     pool:
       vmImage: $(build.pool)
     workspace:
       clean: all
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
     variables:
     - group: Build.NuGet
     steps:
@@ -212,6 +198,7 @@ stages:
       vmImage: $(build.pool)
     workspace:
       clean: all
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
     variables:
     - group: Build.NuGet
     environment: NuGet-Repo
