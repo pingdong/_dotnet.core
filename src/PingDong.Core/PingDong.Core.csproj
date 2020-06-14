@@ -10,21 +10,16 @@
 
   <PropertyGroup>
     <PackageId>PingDong.Core</PackageId>
-    <Description></Description>
     <Authors>Ping Dong</Authors>
     <Copyright>Copyright (c) 2020 Ping Dong</Copyright>
     <RepositoryUrl>https://github.com/pingdong/dotnet.core</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>dotnet library</PackageTags>
-    <PackageLicenseExpression></PackageLicenseExpression>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/pingdong/dotnet.core</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Http\**" />
-    <EmbeddedResource Remove="Http\**" />
-    <None Remove="Http\**" />
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
