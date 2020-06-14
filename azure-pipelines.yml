@@ -43,6 +43,7 @@ stages:
 
     - task: WhiteSource Bolt@20
       displayName: 'Run WhiteSource Bolt'
+      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')  # Free tier only allow 5 tests per repo per day, so only enable in master
 
   - job: Unit_Testing
     displayName: Unit_Testing

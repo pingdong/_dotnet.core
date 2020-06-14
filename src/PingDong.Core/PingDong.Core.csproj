@@ -5,23 +5,26 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>3.0.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>PingDong.Core</PackageId>
-    <Description>Providing common functions</Description>
+    <Description></Description>
     <Authors>Ping Dong</Authors>
     <Copyright>Copyright (c) 2020 Ping Dong</Copyright>
-    <RepositoryUrl>https://github.com/pingdong/dotnet.shared</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/pingdong/dotnet.core</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
     <PackageTags>dotnet library</PackageTags>
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/pingdong/dotnet.shared</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/pingdong/dotnet.core</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Http\**" />
+    <EmbeddedResource Remove="Http\**" />
+    <None Remove="Http\**" />
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
