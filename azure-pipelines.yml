@@ -30,6 +30,7 @@ stages:
     # Preparing
     - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
       displayName: Prepare Analysis on SonarCloud
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       inputs:
         SonarCloud: SonarCloud
         organization: $(unit_test.sonarcloud.organization)
@@ -41,6 +42,7 @@ stages:
 
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       continueOnError: true
       inputs:
         command: download
@@ -70,6 +72,7 @@ stages:
     # Coverage Report
     - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
       displayName: Generating Coverage Report
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       inputs:
         reports: '$(Build.SourcesDirectory)/**/coverage.opencover.xml'
         targetdir: $(Build.SourcesDirectory)/Coverage
@@ -78,6 +81,7 @@ stages:
 
     - task: UniversalPackages@0
       displayName: Publish Code Coverage History
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       inputs:
         command: publish
         publishDirectory: $(local.codecoveragehistory.directory)
@@ -90,6 +94,7 @@ stages:
 
     - task: PublishCodeCoverageResults@1
       displayName: Publish Code Coverage Report
+      condition: ne(variables['Build.Reason'], 'PullRequest')
       inputs:
         codeCoverageTool: Cobertura
         summaryFileLocation: $(Build.SourcesDirectory)/Coverage/Cobertura.xml
@@ -98,14 +103,21 @@ stages:
     # Code Analysis
     - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
       displayName: Run Code Analysis
+      condition: ne(variables['Build.Reason'], 'PullRequest')
 
     - task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
       displayName: Publish Quality Gate Result
+      condition: ne(variables['Build.Reason'], 'PullRequest')
 
     - task: WhiteSource Bolt@20
-      displayName: 'Run WhiteSource Bolt'
-      condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')  # Free tier only allow 5 tests per repo per day, so only enable in master
-  
+      displayName: 'Run WhiteSource Bolt'   # Free tier only allow 5 tests per repo per day, so only enable in master      
+      condition: |
+        and 
+        (
+          eq(variables['Build.SourceBranch'], 'refs/heads/master')  
+          ne(variables['Build.Reason'], 'PullRequest')
+        )
+
 - stage: Package
   displayName: Packaging
   dependsOn: Test
