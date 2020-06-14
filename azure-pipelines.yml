@@ -36,9 +36,8 @@ stages:
         projectKey: ${{ lower( variables['local.projectName']) }}
         projectName: ${{ lower( variables['local.projectName']) }}
         extraProperties: |
-          sonar.cs.vstest.reportsPaths=$(Build.SourcesDirectory)/*.trx
-          sonar.coverageReportPaths=$(Build.SourcesDirectory)/Coverage/cobertura.xml
           sonar.coverage.exclusions=**/*[Uu]nit[Tt]ests*/**/*
+          sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/**/coverage.opencover.xml
 
     - task: UniversalPackages@0
       displayName: Get Code Coverage History
@@ -64,7 +63,7 @@ stages:
       displayName: Run Unit Tests
       inputs:
         command: test
-        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura --logger trx'
+        arguments: '--no-build --configuration $(build.configuration.release) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura,opencover --logger trx'
         publishTestResults: true
         projects: '**/*[Tt]ests/*.csproj'
 
