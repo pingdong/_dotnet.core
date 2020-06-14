@@ -94,10 +94,7 @@ namespace PingDong
             if (!value.IsValidated()) 
                 throw new ArgumentException($"{parameterName} is invalid");
         }
-
-
-
-
+        
         /// <summary>
         /// Convert string to Guid, throws exception if fails.
         /// </summary>
