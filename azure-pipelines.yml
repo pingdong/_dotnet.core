@@ -164,7 +164,7 @@ stages:
     )
   jobs:
   - job: Publishing_Prerelease
-    displayName: Publishing to Prerelease     
+    displayName: Prerelease     
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -188,7 +188,7 @@ stages:
         publishVstsFeed: $(nuget.artifact.feed.prerelease)
 
   - job: Publishing_AzureDevops
-    displayName: Publishing to Azure DevOps Feed  
+    displayName: Azure DevOps Feed  
     pool:
       vmImage: $(build.pool)
     workspace:
@@ -213,7 +213,7 @@ stages:
         allowPackageConflicts: true
 
   - deployment:
-    displayName: Publishing to NuGet.org
+    displayName: NuGet.org
     pool:
       vmImage: $(build.pool)
     workspace:
